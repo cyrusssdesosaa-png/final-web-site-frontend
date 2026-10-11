@@ -566,7 +566,23 @@
     gap: 28px;
     max-width: 1540px;
     margin: 0 auto;
-    align-items: start;
+    align-items: stretch;
+}
+
+.ww-contact-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 16px 22px;
+    border: 3px solid #ff6500;
+    border-radius: 18px;
+    background: #fff;
+    color: #092e4f;
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1.45;
+    letter-spacing: 0;
+    text-align: center;
+    text-transform: none;
 }
 
 @media (min-width: 1020px) {
@@ -588,9 +604,14 @@
     }
 }
 
+.ww-contact-intro {
+    align-self: center;
+    text-align: center;
+}
+
 .ww-contact-intro img {
-    width: 150px;
-    margin-bottom: 8px;
+    width: 168px;
+    margin: 0 auto 8px;
 }
 
 .ww-contact-intro h2 {
@@ -599,6 +620,18 @@
 
 .ww-contact-intro p {
     max-width: 22rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ww-form,
+.ww-contact-wrap .ww-mail {
+    height: 100%;
+    box-shadow: 0 10px 0 rgba(9, 46, 79, 0.08);
+}
+
+.ww-form .ww-btn {
+    margin-top: auto;
 }
 
 .ww-form {
@@ -1421,7 +1454,7 @@
     height: 52px;
     min-height: 52px;
     max-height: 52px;
-    margin-top: 6px;
+    margin-top: auto;
     border: 3px solid #ff6500;
     background: #fff;
     color: #ff6500 !important;
