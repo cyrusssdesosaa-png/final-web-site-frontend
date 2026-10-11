@@ -288,7 +288,7 @@ public class HomeController : Controller
 		TempData["Note"] = sent
 			? "Your note is on its way to the Wally team."
 			: "That note could not be sent just yet. Please write to questions@wallywombats.com.";
-		return Redirect("/#contact");
+		return Redirect("/");
 	}
 
 	[Route("faq")]
@@ -329,30 +329,39 @@ public class HomeController : Controller
 		if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Length > 200)
 		{
 			TempData["Note"] = "Add an email address to join the list.";
-			return Redirect("/#contact");
+			return Redirect("/");
 		}
 
-		var existing = _context.Subscribers.FirstOrDefault(s => s.Email == email);
-		if (existing == null)
+		try
 		{
-			_context.Subscribers.Add(new Subscriber
+			var existing = _context.Subscribers.FirstOrDefault(s => s.Email == email);
+			if (existing == null)
 			{
-				Email = email,
-				FirstName = firstname,
-				LastName = lastname,
-				DateCreated = DateTime.UtcNow
-			});
+				_context.Subscribers.Add(new Subscriber
+				{
+					Email = email,
+					FirstName = firstname,
+					LastName = lastname,
+					DateCreated = DateTime.UtcNow
+				});
+			}
+			else
+			{
+				existing.FirstName = firstname;
+				existing.LastName = lastname;
+				existing.DateCreated = DateTime.UtcNow;
+			}
+
+			_context.SaveChanges();
+			TempData["Note"] = "You are on the list. We will write when something special is coming up.";
 		}
-		else
+		catch (Exception ex)
 		{
-			existing.FirstName = firstname;
-			existing.LastName = lastname;
-			existing.DateCreated = DateTime.UtcNow;
+			_logger.LogWarning(ex, "Mailing list signup was not saved.");
+			TempData["Note"] = "The list could not be saved just yet. Please try again in a minute.";
 		}
 
-		_context.SaveChanges();
-		TempData["Note"] = "You are on the list. We will write when something special is coming up.";
-		return Redirect("/#contact");
+		return Redirect("/");
 	}
 
 	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

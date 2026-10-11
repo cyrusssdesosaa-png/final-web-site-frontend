@@ -323,6 +323,7 @@
             @if (TempData["Note"] is string contactNote)
             {
                 <p class="ww-kicker">@contactNote</p>
+                <script>document.getElementById("contact").scrollIntoView();</script>
             }
             <div class="ww-contact-intro">
                 <img src="~/img/theme/characters/stand-wally.png" alt="Wally" />
