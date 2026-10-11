@@ -287,7 +287,7 @@ public class HomeController : Controller
 		var sent = await _emailService.SendEmailAsync(body, model.EmailAddress);
 		TempData["Note"] = sent
 			? "Your note is on its way to the Wally team."
-			: "That note could not be sent just yet. Please write to questions@wallywombats.com.";
+			: "That note could not be sent just yet. Please write to support@wallywombats.com.";
 		return HomeAgain();
 	}
 

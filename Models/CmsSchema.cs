@@ -62,12 +62,27 @@ public static class CmsSchema
             db.SaveChanges();
         }
 
-        foreach (var loc in db.Location.Where(l => l.Latitude == null || l.Longitude == null).ToList())
+        var waivers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            var pin = LocationMapPins.Coords(loc.Slug);
-            if (pin == null) continue;
-            loc.Latitude = pin.Value.Lat;
-            loc.Longitude = pin.Value.Lng;
+            ["las-vegas"] = "https://waiver.roller.app/WallyWombatsRainbow",
+            ["henderson"] = "https://waiver.roller.app/WallyWombatsHenderson",
+            ["bullhead-city"] = "https://waiver.roller.app/WallyWombatsBullheadCity"
+        };
+        foreach (var loc in db.Location.ToList())
+        {
+            if (loc.Latitude == null || loc.Longitude == null)
+            {
+                var pin = LocationMapPins.Coords(loc.Slug);
+                if (pin != null)
+                {
+                    loc.Latitude = pin.Value.Lat;
+                    loc.Longitude = pin.Value.Lng;
+                }
+            }
+
+            if (waivers.TryGetValue(loc.Slug ?? "", out var waiver)
+                && (string.IsNullOrWhiteSpace(loc.WaiverUrl) || loc.WaiverUrl.Contains("ecom.roller.app", StringComparison.OrdinalIgnoreCase)))
+                loc.WaiverUrl = waiver;
         }
         db.SaveChanges();
 

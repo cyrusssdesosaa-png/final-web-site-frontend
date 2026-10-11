@@ -27,11 +27,11 @@ public static class DemoSeed
         if (db.Location.Any()) return;
 
         var rainbow = Loc("las-vegas", "North Rainbow", "3165 N. Rainbow Boulevard, Las Vegas, NV 89108", "702-463-6555",
-            "https://ecom.roller.app/wallywombatsrainbow/playgroundcheckout/en-us/home", "/img/AOP/ww-004.jpg", 10);
+            "https://ecom.roller.app/wallywombatsrainbow/playgroundcheckout/en-us/home", "https://waiver.roller.app/WallyWombatsRainbow", "/img/AOP/ww-004.jpg", 10);
         var henderson = Loc("henderson", "Henderson", "611 Mall Ring Circle Henderson, NV 89014", "702-483-5900",
-            "https://ecom.roller.app/wallywombatshenderson/buynow/en-us/products", "/img/AOP/ww-006.jpg", 20);
+            "https://ecom.roller.app/wallywombatshenderson/buynow/en-us/products", "https://waiver.roller.app/WallyWombatsHenderson", "/img/AOP/ww-006.jpg", 20);
         var bullhead = Loc("bullhead-city", "Bullhead City", "2135 Highway 95, Suite 125, Bullhead City, AZ 86442", "928-235-6858",
-            "https://ecom.roller.app/wallywombatsbullheadcity/buynow/en-us/products", "/img/AOP/ww-006.jpg", 30);
+            "https://ecom.roller.app/wallywombatsbullheadcity/buynow/en-us/products", "https://waiver.roller.app/WallyWombatsBullheadCity", "/img/AOP/ww-006.jpg", 30);
         db.Location.AddRange(rainbow, henderson, bullhead);
         db.SaveChanges();
 
@@ -77,7 +77,7 @@ public static class DemoSeed
         db.SaveChanges();
     }
 
-    private static Location Loc(string slug, string name, string address, string phone, string tickets, string hero, int sort) => new()
+    private static Location Loc(string slug, string name, string address, string phone, string tickets, string waiver, string hero, int sort) => new()
     {
         Slug = slug,
         Name = name,
@@ -86,7 +86,7 @@ public static class DemoSeed
         HoursMonFri = "9:00 am - 9:00 pm",
         HoursSatSun = "10:00 am - 9:00 pm",
         TicketsUrl = tickets,
-        WaiverUrl = tickets,
+        WaiverUrl = waiver,
         HeroImageUrl = hero,
         IsActive = true,
         SortOrder = sort
