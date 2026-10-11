@@ -288,8 +288,11 @@ public class HomeController : Controller
 		TempData["Note"] = sent
 			? "Your note is on its way to the Wally team."
 			: "That note could not be sent just yet. Please write to questions@wallywombats.com.";
-		return Redirect("/");
+		return HomeAgain();
 	}
+
+	[HttpGet("/Home/SendEmail_Index")]
+	public IActionResult SendEmailIndexGet() => HomeAgain();
 
 	[Route("faq")]
 	public IActionResult FAQs()
@@ -319,8 +322,10 @@ public class HomeController : Controller
 		return View(hm);
 	}
 
+	[HttpGet("/subscribe")]
+	public IActionResult SubscribeGet() => HomeAgain();
+
 	[HttpPost("/subscribe")]
-	[ValidateAntiForgeryToken]
 	public IActionResult Subscribe([FromForm] string email, [FromForm] string firstname, [FromForm] string lastname)
 	{
 		email = (email ?? "").Trim();
@@ -329,7 +334,7 @@ public class HomeController : Controller
 		if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Length > 200)
 		{
 			TempData["Note"] = "Add an email address to join the list.";
-			return Redirect("/");
+			return HomeAgain();
 		}
 
 		try
@@ -361,7 +366,14 @@ public class HomeController : Controller
 			TempData["Note"] = "The list could not be saved just yet. Please try again in a minute.";
 		}
 
-		return Redirect("/");
+		return HomeAgain();
+	}
+
+	private ContentResult HomeAgain()
+	{
+		return Content(
+			"<!doctype html><html><head><meta charset=\"utf-8\"><title>Wally Wombats</title></head><body><p><a href=\"/#contact\">Back to Wally Wombats</a></p><script>location.replace('/#contact');</script></body></html>",
+			"text/html");
 	}
 
 	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
