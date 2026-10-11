@@ -1,0 +1,288 @@
+/* ============================================================================
+   locations.css — public /Locations/{slug} page
+   ----------------------------------------------------------------------------
+   Placeholder styling. ALL colors + fonts come from CSS variables below so
+   John's design (expected Sunday Oct 5) can be applied by only editing the
+   :root block — no hunting through markup required.
+
+   Load AFTER site.css + bootstrap so overrides take effect.
+   ============================================================================ */
+
+:root {
+    /* --- John-swappable brand tokens (expected Sunday Oct 5) --- */
+    --ww-primary:        #ef6c00;         /* Jerickson's orange, placeholder */
+    --ww-primary-dark:   #B55100;
+    --ww-accent:         #FDE047;         /* highlight yellow */
+    --ww-secondary:      #4A2E1A;         /* deep brown */
+    --ww-ink:            #1F2937;         /* body text */
+    --ww-paper:          #FEF9F0;         /* page background cream */
+    --ww-card:           #FFFFFF;
+    --ww-muted:          #6B7280;
+
+    --ww-radius:         1.25rem;
+    --ww-radius-sm:      0.5rem;
+    --ww-shadow-sm:      0 2px 6px rgba(0,0,0,.08);
+    --ww-shadow-lg:      0 20px 50px -20px rgba(0,0,0,.25);
+}
+
+/* ---------- Hero ---------- */
+.loc-hero {
+    position: relative;
+    min-height: 420px;
+    max-height: 70vh;
+    background: linear-gradient(135deg, var(--ww-primary), var(--ww-primary-dark));
+    color: #fff;
+    overflow: hidden;
+    border-bottom-left-radius: var(--ww-radius);
+    border-bottom-right-radius: var(--ww-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .loc-hero__media,
+    .loc-hero__media img,
+    .loc-hero__media video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+    }
+
+    .loc-hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.55));
+        z-index: 1;
+    }
+
+    .loc-hero__content {
+        position: relative;
+        z-index: 2;
+        padding: 4rem 1rem;
+    }
+
+    .loc-hero__name {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.05;
+        text-shadow: 2px 2px 0 rgba(0,0,0,.25);
+    }
+
+    .loc-hero__meta {
+        font-size: 1.1rem;
+        opacity: .95;
+    }
+
+    .loc-hero__meta svg,
+    .loc-hero__meta .bi {
+        margin-right: .4rem;
+    }
+
+/* ---------- CTA buttons ---------- */
+.loc-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .9rem 1.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .loc-cta:hover { transform: translateY(-2px); box-shadow: var(--ww-shadow-lg); }
+
+    .loc-cta--primary   { background: var(--ww-accent); color: var(--ww-ink); }
+    .loc-cta--outline   { background: transparent; color: #fff; border: 2px solid #fff; }
+
+/* ---------- Section headers ---------- */
+.loc-section {
+    padding: 4rem 0;
+}
+
+    .loc-section__title {
+        font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+        font-weight: 800;
+        color: var(--ww-secondary);
+        margin-bottom: 2rem;
+    }
+
+/* ---------- Pricing cards ---------- */
+.price-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.price-card {
+    background: var(--ww-card);
+    border-radius: var(--ww-radius-sm);
+    padding: 1.5rem;
+    box-shadow: var(--ww-shadow-sm);
+    text-align: center;
+    border-top: 4px solid var(--ww-primary);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .price-card:hover { transform: translateY(-3px); box-shadow: var(--ww-shadow-lg); }
+
+    .price-card__group {
+        font-size: .75rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--ww-muted);
+    }
+
+    .price-card__name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ww-ink);
+        margin: .25rem 0 1rem;
+    }
+
+    .price-card__price {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--ww-primary);
+    }
+
+    .price-card__includes {
+        font-size: .9rem;
+        color: var(--ww-muted);
+        margin-top: .75rem;
+    }
+
+/* ---------- Party package cards ---------- */
+.pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.pkg-card {
+    background: var(--ww-card);
+    border-radius: var(--ww-radius-sm);
+    overflow: hidden;
+    box-shadow: var(--ww-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .pkg-card:hover { transform: translateY(-3px); box-shadow: var(--ww-shadow-lg); }
+
+    .pkg-card__img {
+        aspect-ratio: 16 / 10;
+        background: #eee center / contain no-repeat;
+    }
+
+    .pkg-card__body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+
+    .pkg-card__name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--ww-secondary);
+    }
+
+    .pkg-card__price {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--ww-primary);
+        margin-top: auto;
+    }
+
+    .pkg-card__desc {
+        color: var(--ww-muted);
+        font-size: .9rem;
+        margin: .5rem 0 1rem;
+    }
+
+/* ---------- Other locations footer cards ---------- */
+.other-loc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.other-loc-card {
+    display: block;
+    background: var(--ww-card);
+    border-radius: var(--ww-radius-sm);
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--ww-ink);
+    box-shadow: var(--ww-shadow-sm);
+    border-left: 4px solid var(--ww-primary);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .other-loc-card:hover { transform: translateY(-2px); box-shadow: var(--ww-shadow-lg); color: var(--ww-ink); }
+
+    .other-loc-card__name  { font-weight: 700; font-size: 1.1rem; margin-bottom: .25rem; }
+    .other-loc-card__addr  { color: var(--ww-muted); font-size: .9rem; }
+
+/* ---------- Promo popup ---------- */
+.loc-promo-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1080;
+    padding: 1rem;
+    animation: loc-promo-fade .25s ease;
+}
+
+@keyframes loc-promo-fade { from { opacity: 0 } to { opacity: 1 } }
+
+.loc-promo-modal {
+    background: var(--ww-card);
+    border-radius: var(--ww-radius);
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: var(--ww-shadow-lg);
+    border-top: 6px solid var(--ww-primary);
+    position: relative;
+}
+
+    .loc-promo-modal__close {
+        position: absolute;
+        top: .75rem;
+        right: 1rem;
+        background: none;
+        border: 0;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: var(--ww-muted);
+        cursor: pointer;
+    }
+
+    .loc-promo-modal__headline {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--ww-primary);
+        margin-bottom: 1rem;
+    }
+
+    .loc-promo-modal__body { color: var(--ww-ink); }
+
+/* ---------- Embeds ---------- */
+.loc-embed {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    border-radius: var(--ww-radius-sm);
+    border: 0;
+    box-shadow: var(--ww-shadow-sm);
+}
+
+/* ---------- Small screen tweaks ---------- */
+@media (max-width: 576px) {
+    .loc-hero__content { padding: 2.5rem 1rem; }
+    .loc-section       { padding: 2.5rem 0; }
+}

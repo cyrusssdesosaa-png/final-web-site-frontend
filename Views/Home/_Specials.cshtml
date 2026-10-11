@@ -1,0 +1,54 @@
+@model IList<LocationPricing>
+@{
+    var specialArt = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Toddler Time"] = "~/img/Specials/toddler-time.png",
+        ["Bedtime Play"] = "~/img/Specials/bedtime-play.png",
+        ["EMS Kids"] = "~/img/Specials/ems-kids.png"
+    };
+    var specialCopy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Toddler Time"] = "Monday to Friday 9AM-12PM. Children 1-4 years old.",
+        ["Bedtime Play"] = "Monday to Friday 7PM-9PM. All ages.",
+        ["EMS Kids"] = "Medical professionals, active military and law enforcement parents. Any time or day."
+    };
+    var bags = (Model ?? new List<LocationPricing>())
+        .Where(b => (b.GeneralAdmission ?? new List<GeneralAdmission>()).Any(g => g.GACategory == "Special"))
+        .ToList();
+}
+@if (bags.Count > 0)
+{
+    <div id="wwSpecials" class="ww-specials-wrap is-in">
+        <div class="ww-specials-inner">
+        <partial name="_WaveJoin" model="@("#ffda3d")" />
+        <section class="ww-sec ww-sec-yellow" id="specials">
+            <div class="ww-center">
+                <p class="ww-kicker">Specials for this location</p>
+                <h2>Special <span>packages</span></h2>
+            </div>
+            <div class="ww-specials" data-gallery="specials">
+                @foreach (var bag in bags)
+                {
+                    foreach (var extra in (bag.GeneralAdmission ?? new List<GeneralAdmission>()).Where(g => g.GACategory == "Special").OrderBy(g => g.GAName == "Toddler Time" ? 0 : g.GAName == "Bedtime Play" ? 1 : 2))
+                    {
+                        var art = specialArt.ContainsKey(extra.GAName ?? "") ? specialArt[extra.GAName] : null;
+                        var blurb = !string.IsNullOrWhiteSpace(extra.GAInclusion) ? extra.GAInclusion : (specialCopy.TryGetValue(extra.GAName ?? "", out var copy) ? copy : "");
+                        <article data-special-loc="@bag.Location.Slug">
+                            @if (!string.IsNullOrWhiteSpace(art))
+                            {
+                                <img src="@Url.Content(art)" alt="@extra.GAName" />
+                            }
+                            <h3>@extra.GAName</h3>
+                            <strong>$@Money.Display(extra.GAPrice)</strong>
+                            @if (!string.IsNullOrWhiteSpace(blurb))
+                            {
+                                <p>@blurb</p>
+                            }
+                        </article>
+                    }
+                }
+            </div>
+        </section>
+        </div>
+    </div>
+}

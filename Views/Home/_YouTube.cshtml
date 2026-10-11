@@ -1,0 +1,200 @@
+@model HomeModel
+@inject SiteContent Site
+@{
+    var shorts = (Model.YouTubeShorts ?? new List<YouTubeClip>()).Where(c => !string.IsNullOrWhiteSpace(c.Id)).Take(6).ToList();
+    var videos = (Model.YouTubeVideos ?? new List<YouTubeClip>()).Where(c => !string.IsNullOrWhiteSpace(c.Id)).Take(6).ToList();
+    var shortCards = Site.For("youtube-shorts");
+    var seriesCards = Site.For("youtube-series");
+    var facebook = Site.Or("facebook", FacebookPosts.Latest).Take(6).ToList();
+    var instagram = Site.Or("instagram", InstagramPosts.Latest).ToList();
+    var tiktok = Site.Or("tiktok", TikTokPosts.Latest).ToList();
+}
+
+<section class="ww-sec ww-sec-navy" id="shorts">
+    <div class="ww-center">
+        <p class="ww-kicker">Quick clips</p>
+        <h2>Shorts from <span>Wally</span></h2>
+        <p>Instagram, TikTok, and YouTube Shorts. Swipe left to see more.</p>
+    </div>
+
+    <div class="ww-shorts-trio">
+        <div class="ww-watch-block">
+            <p class="ww-kicker">Instagram</p>
+            <div class="ww-yt-shorts" data-yt-drag data-gallery="instagram">
+                @foreach (var post in instagram)
+                {
+                    <a class="ww-yt-card" href="@post.Url" target="_blank" rel="noopener">
+                        <span class="ww-yt-thumb">
+                            <img src="@post.Thumbnail" alt="" />
+                        </span>
+                        <strong>@post.Title</strong>
+                    </a>
+                }
+            </div>
+            <div class="ww-center">
+                <a class="ww-btn" href="@Site.Text("follow.instagram", SocialLinks.Instagram)" target="_blank" rel="noopener">See all on Instagram</a>
+            </div>
+        </div>
+
+        <div class="ww-watch-block">
+            <p class="ww-kicker">TikTok</p>
+            <div class="ww-yt-shorts" data-yt-drag data-gallery="tiktok">
+                @foreach (var post in tiktok)
+                {
+                    <a class="ww-yt-card" href="@post.Url" target="_blank" rel="noopener">
+                        <span class="ww-yt-thumb">
+                            <img src="@post.Thumbnail" alt="" />
+                        </span>
+                        <strong>@post.Title</strong>
+                    </a>
+                }
+            </div>
+            <div class="ww-center">
+                <a class="ww-btn" href="@Site.Text("follow.tiktok", SocialLinks.TikTok)" target="_blank" rel="noopener">See all on TikTok</a>
+            </div>
+        </div>
+
+        <div class="ww-watch-block">
+            <p class="ww-kicker">YouTube Shorts</p>
+            @if (shorts.Count > 0)
+            {
+                <div class="ww-yt-shorts" data-yt-drag data-gallery="youtube-shorts">
+                    @foreach (var clip in shorts)
+                    {
+                        <a class="ww-yt-card" href="@clip.WatchUrl" target="_blank" rel="noopener">
+                            <span class="ww-yt-thumb">
+                                <img src="@clip.Thumbnail" alt="" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/@clip.Id/hqdefault.jpg'" />
+                            </span>
+                            <strong>@clip.Title</strong>
+                        </a>
+                    }
+                </div>
+            }
+            else if (shortCards.Count > 0)
+            {
+                <div class="ww-yt-shorts" data-yt-drag data-gallery="youtube-shorts">
+                    @foreach (var post in shortCards)
+                    {
+                        if (!string.IsNullOrWhiteSpace(post.YouTubeId))
+                        {
+                            <a class="ww-yt-card" href="https://www.youtube.com/shorts/@post.YouTubeId" target="_blank" rel="noopener">
+                                <span class="ww-yt-thumb"><img src="@post.Thumbnail" alt="" /></span>
+                                <strong>@post.Title</strong>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="ww-yt-card" href="@post.Url" target="_blank" rel="noopener">
+                                <span class="ww-yt-thumb"><img src="@post.Thumbnail" alt="" /></span>
+                                <strong>@post.Title</strong>
+                            </a>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="ww-yt-empty">New shorts land here soon.</p>
+            }
+            <div class="ww-center">
+                <a class="ww-btn" href="@Site.Text("follow.youtube", SocialLinks.YouTubeShorts)" target="_blank" rel="noopener">See all YouTube Shorts</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_WaveJoin" model="@("#ffda3d")" />
+<section class="ww-sec ww-sec-yellow" id="series">
+    <div class="ww-center">
+        <p class="ww-kicker">Longer stories</p>
+        <h2>YouTube series and <span>Facebook</span></h2>
+        <p>Full Wally episodes and the latest Facebook posts, all on this page.</p>
+    </div>
+
+    <div class="ww-series-duo">
+        <div class="ww-watch-block">
+            <p class="ww-kicker">YouTube Series</p>
+            @if (videos.Count > 0)
+            {
+                <div class="ww-yt-videos" data-gallery="youtube-series">
+                    @foreach (var clip in videos)
+                    {
+                        <a class="ww-yt-card" href="@clip.WatchUrl" target="_blank" rel="noopener">
+                            <span class="ww-yt-thumb">
+                                <img src="@clip.Thumbnail" alt="" />
+                            </span>
+                            <strong>@clip.Title</strong>
+                        </a>
+                    }
+                </div>
+            }
+            else if (seriesCards.Count > 0)
+            {
+                <div class="ww-yt-videos" data-gallery="youtube-series">
+                    @foreach (var post in seriesCards)
+                    {
+                        if (!string.IsNullOrWhiteSpace(post.YouTubeId))
+                        {
+                            <a class="ww-yt-card" href="https://www.youtube.com/watch?v=@post.YouTubeId" target="_blank" rel="noopener">
+                                <span class="ww-yt-thumb"><img src="@post.Thumbnail" alt="" /></span>
+                                <strong>@post.Title</strong>
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="ww-yt-card" href="@post.Url" target="_blank" rel="noopener">
+                                <span class="ww-yt-thumb"><img src="@post.Thumbnail" alt="" /></span>
+                                <strong>@post.Title</strong>
+                            </a>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="ww-yt-empty">New videos land here as soon as they go up on the channel.</p>
+            }
+            <div class="ww-center">
+                <a class="ww-btn ww-btn-navy" href="@Site.Text("follow.youtube", SocialLinks.YouTubeVideos)" target="_blank" rel="noopener">See all YouTube series</a>
+            </div>
+        </div>
+
+        <div class="ww-watch-block">
+            <p class="ww-kicker">Facebook</p>
+            <div class="ww-yt-videos" data-gallery="facebook">
+                @foreach (var post in facebook)
+                {
+                    if (!string.IsNullOrWhiteSpace(post.YouTubeId))
+                    {
+                        <a class="ww-yt-card" href="@(string.IsNullOrWhiteSpace(post.Url) ? "https://www.youtube.com/watch?v=" + post.YouTubeId : post.Url)" target="_blank" rel="noopener">
+                            <span class="ww-yt-thumb">
+                                <img src="@post.Thumbnail" alt="" />
+                            </span>
+                            <strong>@post.Title</strong>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="ww-yt-card" href="@post.Url" target="_blank" rel="noopener">
+                            <span class="ww-yt-thumb">
+                                <img src="@post.Thumbnail" alt="" />
+                            </span>
+                            <strong>@post.Title</strong>
+                        </a>
+                    }
+                }
+            </div>
+            <div class="ww-center">
+                <a class="ww-btn ww-btn-navy" href="@Site.Text("follow.facebook", SocialLinks.Facebook)" target="_blank" rel="noopener">See all on Facebook</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="ww-clip-view" id="wwClipView" hidden>
+    <button type="button" class="ww-pic-view-close" aria-label="Close video">×</button>
+    <div class="ww-clip-stage">
+        <iframe title="Wally Wombats video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+    <a class="ww-btn" id="wwClipWatch" href="@SocialLinks.YouTube" target="_blank" rel="noopener">Open on YouTube</a>
+</div>

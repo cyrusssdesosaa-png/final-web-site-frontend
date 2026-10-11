@@ -1,0 +1,355 @@
+@model HomeModel
+@inject SiteContent Site
+@{
+    ViewData["Title"] = "Home";
+    var locations = Model.Locations ?? new List<Location>();
+    var faqs = (Model.FAQViewModel ?? new List<FAQ>()).Take(6).ToList();
+    string InitialsOf(string name)
+    {
+        var parts = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "WW";
+        if (parts.Length == 1) return parts[0].Length >= 2 ? parts[0][..2].ToUpper() : parts[0].ToUpper();
+        return (parts[0][..1] + parts[^1][..1]).ToUpper();
+    }
+    var familyNotes = (Model.testimonial ?? new List<Testimonial>())
+        .Where(t => !string.IsNullOrWhiteSpace(t.Comments))
+        .Take(3)
+        .Select(t => new { Quote = t.Comments, Name = string.IsNullOrWhiteSpace(t.CommentBy) ? "Wally family" : t.CommentBy, Role = "Wally family", Initials = InitialsOf(t.CommentBy ?? "WW") })
+        .ToList();
+    if (familyNotes.Count == 0)
+    {
+        familyNotes.Add(new { Quote = "Our kids absolutely love this place! It is one of the few indoor playgrounds that feels incredibly hygienic. The bathrooms are always sparkling clean, which is so important to me.", Name = "Carol T.", Role = "Mother of 2", Initials = "CT" });
+        familyNotes.Add(new { Quote = "Had my baby's first birthday party here and everything was above and beyond. From the outstanding customer service to the fresh delicious pizza slices, cleanliness was an absolute 10 out of 10.", Name = "Alexia G.", Role = "Parent reviewer", Initials = "AG" });
+        familyNotes.Add(new { Quote = "Great space. My 3-year-old and 6-year-old had a complete blast. The party manager was outstanding and made everything seamless. Highly recommend it to everyone in Henderson!", Name = "Kamila O.", Role = "Las Vegas local", Initials = "KO" });
+    }
+}
+
+<div class="ww-hero video-container" id="home">
+    <video autoplay muted loop playsinline>
+        <source type="video/mp4" src="~/img/hero/ww-video.mp4" />
+    </video>
+    <div class="ww-hero-copy">
+        <h1>@Site.Text("home.hero.lead", "Big fun for") <span>@Site.Text("home.hero.accent", "little adventurers!")</span></h1>
+    </div>
+    <div class="ww-hero-waves" aria-hidden="true">
+        <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+            <path class="ww-wave-yellow" d="M0 48 C 160 8, 400 88, 720 36 C 1000 -4, 1240 84, 1440 40 L1440 100 L0 100 Z" />
+            <path class="ww-wave-cyan" d="M0 22 C 160 -12, 400 68, 720 14 C 1000 -22, 1240 64, 1440 18 L1440 40 C 1240 84, 1000 -4, 720 36 C 400 88, 160 8, 0 48 Z" />
+            <path class="ww-wave-navy" d="M0 8 C 160 -16, 400 48, 720 4 C 1000 -26, 1240 44, 1440 8 L1440 18 C 1240 64, 1000 -22, 720 14 C 400 68, 160 -12, 0 22 Z" />
+        </svg>
+    </div>
+    <div class="ww-hero-crew">
+        <img src="~/img/misc/ww-crew-badge.png" alt="Wally Wombats" />
+    </div>
+</div>
+
+<div class="ww-home">
+    <svg class="ww-join ww-join-first" viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#ffda3d" stroke="#ffda3d" stroke-width="28" d="M0 96 Q180 24 360 96 T720 96 T1080 96 T1440 96 V160 H0 Z" />
+        <rect x="0" y="104" width="1440" height="56" fill="#ffda3d" />
+    </svg>
+    <section class="ww-sec ww-sec-yellow" id="watch">
+        <div class="ww-sec-grid">
+            <div>
+                <p class="ww-kicker">@Site.Text("watch.kicker", "Meet Wally and the Super Friends")</p>
+                <h2>@Site.Text("watch.title.lead", "Come join") <span>@Site.Text("watch.title.accent", "the fun!")</span></h2>
+                <p>@Site.Text("watch.blurb", "Watch Wally and his friends in a playful adventure made for little explorers.")</p>
+            </div>
+            <div class="ww-video-stage">
+                <video id="wwStoryVideo" controls playsinline preload="metadata" poster="~/img/theme/video/wally-wombats-poster.jpg">
+                    <source src="~/img/theme/video/wally-wombats-trailer.mp4" type="video/mp4" />
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan" id="crew">
+        <div class="ww-center">
+            <p class="ww-kicker">@Site.Text("crew.kicker", "Meet Wally and Friends")</p>
+            <h2>@Site.Text("crew.title.lead", "Every adventure is") <span>@Site.Text("crew.title.accent", "better with friends.")</span></h2>
+            <p>@Site.Text("crew.blurb", "Tap a Super Friend to read their story, favorite things, and fun facts.")</p>
+        </div>
+        <div class="ww-crew">
+            @foreach (var pal in Site.Friends())
+            {
+                <a class="ww-friend-card @(pal.Slug == "wally" ? "featured" : "")" asp-controller="Home" asp-action="Friend" asp-route-slug="@pal.Slug">
+                    <img src="@Url.Content(pal.Image)" alt="@pal.Name" />
+                    <strong>@pal.Name</strong>
+                    <span>@pal.Tagline</span>
+                    <em>Meet @pal.ShortName</em>
+                </a>
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#ffda3d")" />
+    <section class="ww-sec ww-sec-yellow" id="playground">
+        <div class="ww-sec-head">
+            <div>
+                <p class="ww-kicker">@Site.Text("playground.kicker", "Our playground")</p>
+                <h2>@Site.Text("playground.title.lead", "Room to climb.") <span>@Site.Text("playground.title.accent", "Space to imagine.")</span></h2>
+            </div>
+            <p>@Site.Text("playground.blurb", "Slides, tunnels, ball pits, obstacle zones, and open spaces give every child a new way to move, explore, and grow.")</p>
+            <img class="ww-guide" src="~/img/theme/characters/stand-naenae.png" alt="" />
+        </div>
+        @{
+            var playOrder = new[] { "las-vegas", "henderson", "bullhead-city" };
+            var playSets = playOrder
+                .Select(slug =>
+                {
+                    var loc = locations.FirstOrDefault(l => string.Equals(l.Slug, slug, StringComparison.OrdinalIgnoreCase));
+                    if (loc == null) loc = new Location { Slug = slug, Name = slug };
+                    var pics = LocationPhotos.For(loc);
+                    return new { Name = string.IsNullOrWhiteSpace(loc.Name) ? slug : loc.Name, Pics = pics };
+                })
+                .Where(set => set.Pics.Count > 0)
+                .ToList();
+        }
+        <div class="ww-photos" data-gallery="playground" data-photo-fade>
+            @if (playSets.Count > 0)
+            {
+                @for (var round = 0; round < 2; round++)
+                {
+                    foreach (var set in playSets)
+                    {
+                        var start = set.Pics[round % set.Pics.Count];
+                        <figure data-pool="@string.Join("|", set.Pics)">
+                            <img class="is-on" src="@start" alt="@set.Name playground" />
+                        </figure>
+                    }
+                }
+            }
+            else
+            {
+                @for (var i = 1; i <= 6; i++)
+                {
+                    <figure><img src="~/img/theme/playground/playground-0@(i).png" alt="Wally Wombats playground" /></figure>
+                }
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+    <section class="ww-sec ww-sec-navy" id="arcade">
+        <div class="ww-sec-head">
+            <div>
+                <p class="ww-kicker">@Site.Text("arcade.kicker", "Level up the fun")</p>
+                <h2>@Site.Text("arcade.title.lead", "Bright lights.") <span>@Site.Text("arcade.title.accent", "Big wins.")</span></h2>
+            </div>
+            <p>@Site.Text("arcade.blurb", "Racing games, prize machines, air hockey, and arcade favorites keep kids and grown-ups coming back for one more round.")</p>
+            <img class="ww-guide" src="~/img/theme/characters/stand-dondon.png" alt="" />
+        </div>
+        <div class="ww-photos ww-photos-light" data-gallery="arcade">
+            @{
+                var arcadePics = LocationPhotos.Theme("arcade", "arcade-");
+            }
+            @if (arcadePics.Count == 0)
+            {
+                @for (var i = 1; i <= 6; i++)
+                {
+                    <figure><img src="~/img/theme/arcade/arcade-0@(i).png" alt="Wally Wombats arcade" /></figure>
+                }
+            }
+            else
+            {
+                @foreach (var pic in arcadePics)
+                {
+                    <figure><img src="@pic" alt="Wally Wombats arcade" /></figure>
+                }
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan" id="birthdays">
+        <div class="ww-sec-head">
+            <div>
+                <p class="ww-kicker">@Site.Text("birthdays.kicker", "Birthdays at Wally's")</p>
+                <h2>@Site.Text("birthdays.title.lead", "Their biggest day.") <span>@Site.Text("birthdays.title.accent", "Your easiest party.")</span></h2>
+            </div>
+            <p>@Site.Text("birthdays.blurb", "Private party rooms, all-day play, and a celebration made for little adventurers. Pick a location to see packages and prices.")</p>
+        </div>
+        <div class="ww-photos" data-gallery="parties">
+            @{
+                var partyPics = LocationPhotos.Theme("parties", "party-");
+            }
+            @if (partyPics.Count == 0)
+            {
+                @for (var i = 1; i <= 6; i++)
+                {
+                    <figure><img src="~/img/theme/parties/party-0@(i).png" alt="Birthday party at Wally Wombats" /></figure>
+                }
+            }
+            else
+            {
+                @foreach (var pic in partyPics)
+                {
+                    <figure><img src="@pic" alt="Birthday party at Wally Wombats" /></figure>
+                }
+            }
+        </div>
+        <div class="ww-center" style="margin-top:28px">
+            <a class="ww-btn ww-btn-navy" href="#locations">Pick a location</a>
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#ffda3d")" />
+    <section class="ww-sec ww-sec-yellow" id="locations">
+        <div class="ww-center">
+            <p class="ww-kicker">Find a Wally</p>
+            <h2>@(locations.Count == 1 ? "One place to play" : locations.Count + " places to play")</h2>
+            <p>Drag the map to see the states around us. Tap a Wally pin to open that club, then see prices and book.</p>
+        </div>
+        <partial name="_LocationMap" model="locations" />
+        <div class="ww-places">
+            @foreach (var loc in locations)
+            {
+                <article>
+                    <div class="ww-place-pic" style="background-image:url('@LocationPhotos.CardImage(loc)')"></div>
+                    <p class="ww-kicker">@loc.Name</p>
+                    <h3>@loc.Name</h3>
+                    @if (!string.IsNullOrWhiteSpace(loc.Address))
+                    {
+                        <p>@loc.Address</p>
+                    }
+                    <p>
+                        @if (!string.IsNullOrWhiteSpace(loc.HoursMonFri))
+                        {
+                            <strong>Mon-Fri</strong> @loc.HoursMonFri<br />
+                        }
+                        @if (!string.IsNullOrWhiteSpace(loc.HoursSatSun))
+                        {
+                            <strong>Sat-Sun</strong> @loc.HoursSatSun
+                        }
+                    </p>
+                    <div class="ww-place-actions">
+                        <a class="ww-btn" asp-controller="Home" asp-action="Book" asp-route-slug="@loc.Slug">See prices and book</a>
+                        @if (!string.IsNullOrWhiteSpace(loc.Phone))
+                        {
+                            <a class="ww-btn ww-btn-navy" href="tel:@loc.Phone">Call @loc.Phone</a>
+                        }
+                        <a class="ww-text-link" href="/Locations/@loc.Slug">Hours and directions</a>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#ff6500")" />
+    <section class="ww-sec ww-sec-orange" id="notes">
+        <div class="ww-center">
+            <p class="ww-kicker">@Site.Text("notes.kicker", "Loved by Las Vegas parents")</p>
+            <h2>@Site.Text("notes.title", "Notes from Wally families")</h2>
+        </div>
+        <div class="ww-notes">
+            @foreach (var note in familyNotes)
+            {
+                <blockquote>
+                    <p class="ww-stars" aria-label="5 out of 5 stars">★★★★★</p>
+                    <p>"@note.Quote"</p>
+                    <footer>
+                        <span class="ww-avatar">@note.Initials</span>
+                        <span><strong>@note.Name</strong><small>@note.Role</small></span>
+                    </footer>
+                </blockquote>
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+    <partial name="_YouTube" model="Model" />
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <partial name="_Spotify" />
+
+    <partial name="_WaveJoinWhite" />
+    <section class="ww-sec ww-sec-white" id="faq">
+        <div class="ww-sec-grid">
+            <div>
+                <p class="ww-kicker">@Site.Text("faq.kicker", "Good to know")</p>
+                <h2>@Site.Text("faq.title.lead", "Before your") <span>@Site.Text("faq.title.accent", "Wally day.")</span></h2>
+                <p>@Site.Text("faq.blurb", "Quick answers for a smoother family adventure.")</p>
+            </div>
+            <div class="ww-faq">
+                @if (faqs.Count > 0)
+                {
+                    var first = true;
+                    foreach (var faq in faqs)
+                    {
+                        if (first)
+                        {
+                            <details open>
+                                <summary>@faq.Question</summary>
+                                <p>@faq.Answer</p>
+                            </details>
+                            first = false;
+                        }
+                        else
+                        {
+                            <details>
+                                <summary>@faq.Question</summary>
+                                <p>@faq.Answer</p>
+                            </details>
+                        }
+                    }
+                }
+                else
+                {
+                    <details open>
+                        <summary>What does general admission include?</summary>
+                        <p>Unlimited access to all play areas during your visit. Keep your receipt and you can return later the same day.</p>
+                    </details>
+                    <details>
+                        <summary>Do adults need to purchase a ticket?</summary>
+                        <p>No. Every paying child includes entry for up to two accompanying adults.</p>
+                    </details>
+                    <details>
+                        <summary>What should we bring?</summary>
+                        <p>Socks are required inside the playground. A change of clothes is also helpful for active little explorers.</p>
+                    </details>
+                    <details>
+                        <summary>Is parking available?</summary>
+                        <p>Yes. All Wally Wombats locations offer free on-site parking.</p>
+                    </details>
+                }
+            </div>
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan" id="contact">
+        <div class="ww-contact-wrap">
+            @if (TempData["Note"] is string contactNote)
+            {
+                <p class="ww-kicker">@contactNote</p>
+            }
+            <div class="ww-contact-intro">
+                <img src="~/img/theme/characters/stand-wally.png" alt="Wally" />
+                <p class="ww-kicker">@Site.Text("contact.kicker", "Send Wally a note")</p>
+                <h2>@Site.Text("contact.title.lead", "Do you have") <span>@Site.Text("contact.title.accent", "a question?")</span></h2>
+                <p>@Site.Text("contact.blurb", "Give us a call or send a message. The Wally team is always eager to hear from friends.")</p>
+            </div>
+            <form class="ww-form" asp-controller="Home" asp-action="SendEmail_Index" method="post">
+                <label>Full name<input name="FirstName" autocomplete="name" required /></label>
+                <input type="hidden" name="LastName" value="" />
+                <label>Email address<input type="email" name="EmailAddress" autocomplete="email" required /></label>
+                <label>Phone number<input type="tel" name="PhoneNumber" autocomplete="tel" /></label>
+                <label>Preferred location
+                    <select name="LocationName" required>
+                        <option value="" disabled selected>Select a location</option>
+                        @foreach (var loc in locations)
+                        {
+                            <option value="@loc.Name">@loc.Name</option>
+                        }
+                    </select>
+                </label>
+                <label>Message<textarea name="Message" rows="4" required></textarea></label>
+                <button class="ww-btn" type="submit">Send inquiry</button>
+            </form>
+            <partial name="_MailingList" />
+        </div>
+    </section>
+
+    <partial name="_WaveJoinWhite" />
+</div>

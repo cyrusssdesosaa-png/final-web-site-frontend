@@ -1,0 +1,82 @@
+@model HomeModel
+@{
+    ViewData["Title"] = "Contact Us";
+    var locations = Model.Locations ?? new List<Location>();
+    var col = locations.Count >= 3 ? "col-sm-12 col-md-4 col-lg-4 mb-4" : "col-sm-12 col-md-6 col-lg-6 mb-4";
+}
+
+<div class="video-container">
+    <video autoplay muted loop>
+        <source type="video/mp4" src="~/img/hero/ww-video.mp4" />
+    </video>
+    <div class="hero-title">
+        <img src="~/img/misc/ww-contactus.png" class="hero-title-img" data-aos="fade-up" data-aos-duration="1000" data-aos-once="true" />
+    </div>
+    <div class="hero-ww">
+        <img id="wave" src="~/img/Hero/ww-half.png" data-aos="slide-left" data-aos-duration="2000" data-aos-once="true" />
+    </div>
+    <div class="hero-wavy">
+        <img id="wave" src="~/img/misc/path-blue.svg" />
+    </div>
+</div>
+
+<section class="section_contactus">
+    <div class="container">
+        <partial name="_PartialViewContactUs" />
+
+        <div class="row my-5" data-aos="fade-up" data-aos-duration="1000" data-aos-once="true">
+            <div class="col-sm-12">
+                <h1 class="mb-3 white-stroke" style="color: rgb(239, 108, 0);font-size: 45px;">
+                    @(locations.Count) Super Fun Location@(locations.Count == 1 ? "" : "s")
+                </h1>
+            </div>
+            @foreach (var loc in locations)
+            {
+                <div class="@col">
+                    @if (!string.IsNullOrWhiteSpace(loc.MapEmbedUrl))
+                    {
+                        <iframe allowfullscreen frameborder="0" loading="lazy" src="@loc.MapEmbedUrl" class="mb-3" width="100%" height="400" style="border-radius: 30px;"></iframe>
+                    }
+                    <div>
+                        <label class="form-label text-center d-block h1 px-4" style="color: rgb(239, 108, 0);font-size: 45px;">@loc.Name</label>
+                        @if (!string.IsNullOrWhiteSpace(loc.Phone))
+                        {
+                            <p class="text-center mb-0" style="font-family: 'WWFont', serif;font-size: 18px;color: var(--bs-emphasis-color);">
+                                Phone Number&nbsp;:&nbsp;<a href="tel:@loc.Phone" style="color: var(--bs-emphasis-color);font-size: 18px; text-decoration: none">@loc.Phone</a>
+                            </p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(loc.Address))
+                        {
+                            <label class="form-label text-center d-block px-4" style="font-family: 'WWFont', serif;color: var(--bs-emphasis-color);font-size: 18px;">
+                                Address : @loc.Address
+                            </label>
+                        }
+                        <label class="form-label text-center d-block px-4" style="font-family: 'WWFont', serif;color: var(--bs-emphasis-color);font-size: 18px;">
+                            Open Hours
+                        </label>
+                        @if (!string.IsNullOrWhiteSpace(loc.HoursMonFri))
+                        {
+                            <label class="form-label text-center d-block px-4" style="font-family: 'WWFont', serif;color: var(--bs-emphasis-color);font-size: 18px;">Monday - Friday : @loc.HoursMonFri</label>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(loc.HoursSatSun))
+                        {
+                            <label class="form-label text-center d-block px-4" style="font-family: 'WWFont', serif;color: var(--bs-emphasis-color);font-size: 18px;">Saturday - Sunday : @loc.HoursSatSun</label>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(loc.WaiverUrl))
+                        {
+                            <div class="text-center mt-3">
+                                <a class="my-1 text-center border rounded-pill ww-btn-waiver px-3 book-btn d-inline-block" href="@loc.WaiverUrl" target="_blank" style="font-size: 18px;">Sign waiver</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <partial name="_PartialViewEmailSubscription" />
+    </div>
+
+    <div class="footer-wavy">
+        <img id="wave" src="~/img/misc/path-white.svg" />
+    </div>
+</section>

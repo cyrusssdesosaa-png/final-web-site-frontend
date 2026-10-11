@@ -1,0 +1,129 @@
+@inject WWContext Db
+@inject SiteContent Site
+@{
+    var navLocs = new List<Location>();
+    try
+    {
+        navLocs = Db.Location.Where(l => l.IsActive).OrderBy(l => l.SortOrder).ToList();
+    }
+    catch
+    {
+        navLocs = new List<Location>();
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Wally Wombats</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/aos.min.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/img/Header/favicon.png" asp-append-version="true" />
+    <link rel="icon" type="image/x-icon" href="~/img/Header/favicon.ico" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/img/Header/apple-touch.png" asp-append-version="true" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comic+Neue" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <script>
+        (function () {
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (nav && nav.type === 'reload') {
+                if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+                window.scrollTo(0, 0);
+            }
+            if (/privacy-policy/i.test(location.pathname)) return;
+            if (!document.cookie.split('; ').some(function (c) { return c.indexOf('ww_cookie_consent=') === 0; })) {
+                document.documentElement.classList.add('ww-cookie-pending');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="ww-chrome">
+    <div class="ww-ribbon">
+        <p>@Site.Text("ribbon.text", "Three locations • Open seven days a week")</p>
+        <a asp-controller="Home" asp-action="Index" asp-fragment="locations">View locations</a>
+    </div>
+    <header class="ww-topbar">
+        <a class="ww-brand" asp-controller="Home" asp-action="Index" asp-fragment="home" data-nav="home" aria-label="Wally Wombats home">
+            <img src="~/img/Header/wally-badge.png" alt="Wally Wombats" />
+        </a>
+        <button class="ww-topbar-toggle" type="button" aria-label="Toggle navigation" aria-controls="wwTopNav" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="ww-topbar-nav" id="wwTopNav" aria-label="Main">
+            @{
+                var navAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+            }
+            <a class="@(navAction == "Index" ? "is-on" : "")" asp-controller="Home" asp-action="Index" asp-fragment="home" data-nav="home">Home</a>
+            <a class="@(navAction == "Friend" ? "is-on" : "")" asp-controller="Home" asp-action="Index" asp-fragment="crew" data-nav="crew">Friends</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="playground" data-nav="playground">Playground</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="arcade" data-nav="arcade">Arcade</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="birthdays" data-nav="birthdays">Birthdays</a>
+            <div class="ww-loc-menu">
+                <button type="button" class="ww-loc-toggle" data-nav="locations" aria-expanded="false" aria-controls="wwLocPanel">Locations</button>
+                <div class="ww-loc-panel" id="wwLocPanel">
+                    <a asp-controller="Home" asp-action="Find">Wally map</a>
+                    @foreach (var loc in navLocs)
+                    {
+                        <a asp-controller="Home" asp-action="Book" asp-route-slug="@loc.Slug">@loc.Name prices</a>
+                    }
+                </div>
+            </div>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="contact" data-nav="contact">Contact</a>
+        </nav>
+        <a class="ww-nav-book" asp-controller="Home" asp-action="Find">Book now</a>
+    </header>
+    </div>
+
+    @RenderBody()
+
+    <partial name="_SiteFooter" />
+
+    <div class="ww-pic-view" id="wwGallery" hidden>
+        <button type="button" class="ww-pic-view-close" aria-label="Close">×</button>
+        <button type="button" class="ww-gal-arrow ww-gal-prev" data-gal-prev aria-label="Previous picture">‹</button>
+        <img alt="" />
+        <button type="button" class="ww-gal-arrow ww-gal-next" data-gal-next aria-label="Next picture">›</button>
+    </div>
+
+    <button type="button" class="ww-to-top" id="wwToTop" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5 L12 7.5 L19 14.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </button>
+
+    <div class="ww-cookie" id="wwCookie" role="dialog" aria-modal="true" aria-labelledby="wwCookieTitle">
+        <div class="ww-cookie-card">
+            <img class="ww-cookie-logo" src="~/img/Header/wally-badge.png" alt="" />
+            <h2 id="wwCookieTitle">Cookies help us keep the fun going</h2>
+            <p>We use cookies to run Wally Wombats, remember your choices, and make the site faster for families. Please pick an option before you continue.</p>
+            <div class="ww-cookie-actions">
+                <button type="button" class="ww-cookie-accept" data-cookie-choice="accepted">Accept cookies</button>
+                <button type="button" class="ww-cookie-decline" data-cookie-choice="declined">No thanks</button>
+            </div>
+            <a class="ww-cookie-privacy" asp-controller="Home" asp-action="Privacy">Read our privacy policy</a>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/aos.min.js"></script>
+    <script>
+        AOS.init();
+        (function () {
+            var btn = document.querySelector('.ww-topbar-toggle');
+            var nav = document.getElementById('wwTopNav');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', function () {
+                var open = nav.classList.toggle('open');
+                btn.classList.toggle('open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

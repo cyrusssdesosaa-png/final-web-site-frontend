@@ -1,0 +1,18 @@
+@model IList<Location>
+@{
+    ViewData["Title"] = "Pick a location";
+    var locations = Model ?? new List<Location>();
+}
+
+<div class="ww-home ww-find">
+    <section class="ww-sec ww-sec-yellow" id="find">
+        <div class="ww-center">
+            <p class="ww-kicker">Find a Wally</p>
+            <h2>Pick a <span>location</span></h2>
+            <p>Zoom in, then tap a Wally pin. See prices and book from that club's card.</p>
+        </div>
+        <partial name="_LocationMap" model="locations" />
+    </section>
+
+    <partial name="_WaveJoinWhite" />
+</div>

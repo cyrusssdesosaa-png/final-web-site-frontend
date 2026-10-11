@@ -1,0 +1,16 @@
+<form class="ww-mail" action="/subscribe" method="post">
+    @Html.AntiForgeryToken()
+    <h3>Subscribe to our mailing list to keep informed on upcoming special events.</h3>
+    <label>Email address *
+        <input type="email" name="email" autocomplete="email" required />
+    </label>
+    <div class="ww-mail-names">
+        <label>First name *
+            <input type="text" name="firstname" autocomplete="given-name" required />
+        </label>
+        <label>Last name *
+            <input type="text" name="lastname" autocomplete="family-name" required />
+        </label>
+    </div>
+    <button class="ww-btn ww-btn-navy" type="submit">Subscribe</button>
+</form>

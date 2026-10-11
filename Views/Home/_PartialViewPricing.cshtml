@@ -1,0 +1,396 @@
+@model HomeModel
+@{
+    var locationRates = Model.LocationRates ?? new List<LocationPricing>();
+    var packages = Model.partypackage ?? new List<PartyPackage>();
+    var firstSlug = locationRates.FirstOrDefault()?.Location?.Slug;
+}
+
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-12 mb-3" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+            <div class="text-center">
+                <h1 class="text-center white-stroke" style="color: #ef6c00;">
+                    General Admission
+                </h1>
+                <div>
+                    <p style="font-size: 18px;">
+                        Whether you're planning a birthday bash or
+                        looking for regular playtime, we've got you covered. Choose from our range of
+                        packages designed to suit every need and budget, ensuring a memorable
+                        experience for all.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-10 col-xxl-9 d-xxl-flex mx-auto mb-2" data-aos="fade-up" data-aos-duration="1000" data-aos-once="true">
+            <div class="mx-auto popup-div text-center h-100 p-4">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-9 col-xl-9 col-xxl-9">
+                        <div class="row">
+                            <div class="col-5 col-sm-3 col-xxl-3 d-flex d-sm-flex justify-content-center align-items-center justify-content-sm-center align-items-sm-center">
+                                <img src="~/img/Misc/Waiver.png" width="60%" />
+                            </div>
+                            <div class="col">
+                                <p class="text-start mb-0" style="color: #ef6c00;font-size: 18px;">
+                                    Visit Wally Wombats
+                                </p>
+                                <p class="text-start mt-0" style="font-size: 18px;">
+                                    Before continuing, kindly complete the <span style="color: red;">Waiver form</span>.
+                                    You can return to this page once you're done then choose your preferred option.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-8 col-md-6 col-lg-3 col-xl-3 col-xxl-3 mx-auto align-items-xl-center p-2 text-center text-md-start">
+                        @foreach (var loc in Model.Locations ?? new List<Location>())
+                        {
+                            if (string.IsNullOrWhiteSpace(loc.WaiverUrl))
+                            {
+                                continue;
+                            }
+                            <a class="my-1 text-center border rounded-pill d-xxl-flex justify-content-xxl-center align-items-xxl-center ww-btn-waiver px-3 book-btn"
+                               href="@loc.WaiverUrl" target="_blank" style="font-size: 18px;">
+                                @loc.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-10 col-xxl-9 mx-auto mb-5" style="border-width: 1px;" data-aos="fade-up" data-aos-duration="1000" data-aos-once="true">
+            <div class="mx-auto popup-div text-center h-100 p-4">
+                <p class="lead text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center mt-0 mb-2" style="color: #ef6c00;">
+                    Choose a location to preview rates
+                </p>
+                <ul class="nav nav-pills d-flex justify-content-center mb-0" role="tablist">
+                    @foreach (var bag in locationRates)
+                    {
+                        var loc = bag.Location;
+                        var active = loc.Slug == firstSlug;
+                        <li class="nav-item px-1 pt-2" role="presentation">
+                            <a class="nav-link border rounded-pill book-btn btn py-2 px-4 @(active ? "active" : "")"
+                               role="tab" data-bs-toggle="pill" href="#tab-loc-@loc.Slug" style="font-size: 16px;">
+                                @loc.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mt-3 mb-3" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+            <div class="text-center">
+                <h2 class="text-center white-stroke" style="color: #ef6c00;">
+                    Daily Rates
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+        @foreach (var bag in locationRates)
+        {
+            var loc = bag.Location;
+            var ga = bag.GeneralAdmission ?? new List<GeneralAdmission>();
+            var weekday = ga.Where(g => g.GACategory == "Weekdays").OrderBy(g => g.GAPrice).ToList();
+            var weekend = ga.Where(g => g.GACategory == "Weekend").OrderBy(g => g.GAPrice).ToList();
+            var specials = ga.Where(g => g.GACategory == "Special").OrderBy(g => g.GAPrice).ToList();
+            var hasDayToggle = weekday.Count > 0 && weekend.Count > 0;
+            var dailyDefault = hasDayToggle ? weekend : (weekday.Count > 0 ? weekday : weekend);
+            var paneActive = loc.Slug == firstSlug;
+            <div class="tab-pane fade @(paneActive ? "show active" : "")" role="tabpanel" id="tab-loc-@loc.Slug">
+                <h3 class="text-center" style="font-size: 20px;color: #7c00fe;">
+                    Inclusion: Two adult per child, $5 additional per adult.
+                </h3>
+
+                @if (hasDayToggle)
+                {
+                    <ul class="nav nav-pills d-flex justify-content-center mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link border rounded-pill px-5 ww-btn-light" role="tab" data-bs-toggle="pill" href="#tab-daily-@loc.Slug-weekdays" style="font-size: 18px;">Weekdays</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active border rounded-pill px-5 ww-btn-light" role="tab" data-bs-toggle="pill" href="#tab-daily-@loc.Slug-weekend" style="font-size: 18px;">Weekend</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade" role="tabpanel" id="tab-daily-@loc.Slug-weekdays">
+                            @await Html.PartialAsync("_PartialViewDailyRateCards", weekday)
+                        </div>
+                        <div class="tab-pane fade show active" role="tabpanel" id="tab-daily-@loc.Slug-weekend">
+                            @await Html.PartialAsync("_PartialViewDailyRateCards", weekend)
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @await Html.PartialAsync("_PartialViewDailyRateCards", dailyDefault)
+                }
+
+                @if (specials.Count > 0)
+                {
+                    <div class="row mt-5 mb-3" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+                        <div class="col-12">
+                            <h2 class="text-center white-stroke" style="color: #ef6c00;">Special Packages</h2>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mb-3">
+                        @foreach (var extra in specials)
+                        {
+                            var sticker = extra.GAName switch
+                            {
+                                "Toddler Time" => "/img/Specials/toddler-time.png",
+                                "Bedtime Play" => "/img/Specials/bedtime-play.png",
+                                "EMS Kids" => "/img/Specials/ems-kids.png",
+                                _ => null
+                            };
+                            <div class="col-12 col-sm-6 col-md-4 mb-3" data-aos="flip-right" data-aos-duration="1500" data-aos-once="true">
+                                <div class="special-pkg-div text-center h-100">
+                                    @if (sticker != null)
+                                    {
+                                        <img class="w-100 mb-3 party-br" src="@sticker" alt="@extra.GAName" />
+                                    }
+                                    <h3 style="font-size: 20px;color: rgb(239,108,0);">@extra.GAName</h3>
+                                    <h1 class="mb-2"><sup>$</sup>@Money.Display(extra.GAPrice)</h1>
+                                    @if (!string.IsNullOrWhiteSpace(extra.GAInclusion))
+                                    {
+                                        <p class="px-2 mb-0" style="font-size: 16px;color: var(--bs-body-color);">@extra.GAInclusion</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col text-center mx-auto mb-3" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+            <h2 style="color: rgb(239, 108, 0);" class="white-stroke">
+                Birthday Party Packages
+            </h2>
+        </div>
+    </div>
+    <div data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+        <ul class="nav nav-pills d-flex d-xxl-flex justify-content-center justify-content-xxl-center mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active border rounded-pill px-5 ww-btn-light" role="tab" data-bs-toggle="pill" href="#tab-party-weekdays" style="font-size: 18px;">Weekdays</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link border rounded-pill px-5 ww-btn-light" role="tab" data-bs-toggle="pill" href="#tab-party-weekends" style="font-size: 18px;">Weekend</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" role="tabpanel" id="tab-party-weekdays">
+                <div class="row mb-3">
+                    @foreach (var item2 in packages.Where(p => p.PackageCategory == "Weekdays"))
+                    {
+                        <div class="col col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3 col-xxl-3 mb-3" data-aos="flip-right" data-aos-duration="1500" data-aos-once="true">
+                            <div class="popup-party-div text-center border-0 h-100" style="border-radius: 20px;">
+                                @if (!string.IsNullOrWhiteSpace(item2.PackageImage))
+                                {
+                                    <img class="w-100 mb-3 party-br" src="@Url.Content(item2.PackageImage)" />
+                                }
+                                <h3 style="font-size: 20px;color: rgb(239,108,0);">@item2.PackageName</h3>
+                                <h1><sup>$</sup>@Money.Display(item2.PackagePrice)</h1>
+                                <ul class="ul-center">
+                                    @foreach (var sub in (item2.PackageDescription ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                    {
+                                        <li class="text-start d-flex align-items-xxl-center" style="color: var(--bs-body-color);">
+                                            <span class="bs-icon-rounded bs-icon me-2" style="color: #ef6223;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-check-lg">
+                                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022"></path>
+                                                </svg>
+                                            </span>
+                                            <span style="font-size: 16px;">@sub.Trim()</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" role="tabpanel" id="tab-party-weekends">
+                <div class="row mb-3">
+                    @foreach (var item3 in packages.Where(p => p.PackageCategory == "Weekend"))
+                    {
+                        <div class="col col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3 col-xxl-3 mb-3" data-aos="flip-right" data-aos-duration="1500" data-aos-once="true">
+                            <div class="popup-party-div text-center border-0 h-100" style="border-radius: 20px;">
+                                @if (!string.IsNullOrWhiteSpace(item3.PackageImage))
+                                {
+                                    <img class="w-100 mb-3 party-br" src="@Url.Content(item3.PackageImage)" />
+                                }
+                                <h3 style="font-size: 20px;color: rgb(239,108,0);">@item3.PackageName</h3>
+                                <h1><sup>$</sup>@Money.Display(item3.PackagePrice)</h1>
+                                <ul class="ul-center">
+                                    @foreach (var sub2 in (item3.PackageDescription ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                    {
+                                        <li class="text-start d-flex align-items-xxl-center" style="color: var(--bs-body-color);">
+                                            <span class="bs-icon-rounded bs-icon me-2" style="color: #ef6223;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-check-lg">
+                                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022"></path>
+                                                </svg>
+                                            </span>
+                                            <span style="font-size: 16px;">@sub2.Trim()</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row d-flex d-sm-flex d-md-flex justify-content-center mb-5">
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xxl-3 d-md-flex my-auto mb-3" data-aos="zoom-in-right" data-aos-duration="1000" data-aos-once="true">
+            <img class="w-100" src="~/img/Misc/Wally5.png" />
+        </div>
+        <div class="col-md-4 col-xl-6 text-center mb-3" data-aos="zoom-out" data-aos-duration="1000" data-aos-once="true">
+            <h2 style="color: #ef6c00;" class="white-stroke">What's Included?</h2>
+            <ul class="text-start p-0 mt-5">
+                @foreach (var item4 in packages.Where(p => p.PackageCategory == "Inclusion"))
+                {
+                    <li class="text-start d-flex align-items-xxl-center" style="color: var(--bs-body-color);">
+                        <span class="bs-icon-rounded bs-icon me-2" style="color: #ef6223;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-check-lg">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022"></path>
+                            </svg>
+                        </span>
+                        <span style="font-size: 18px;color: var(--bs-emphasis-color);">@item4.PackageDescription</span>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-3 col-xxl-3 my-auto mb-3" data-aos="zoom-in-left" data-aos-duration="1000" data-aos-once="true">
+            <img class="w-100" src="~/img/misc/Wally6.png" />
+        </div>
+    </div>
+    <div class="row justify-content-center mb-5" data-aos="zoom-in-up" data-aos-duration="1000" data-aos-once="true">
+        <div class="col-12 text-center">
+            @foreach (var bag in locationRates)
+            {
+                var loc = bag.Location;
+                var bookHref = string.IsNullOrWhiteSpace(loc.TicketsUrl) ? "#" : loc.TicketsUrl.Trim();
+                var show = loc.Slug == firstSlug;
+                <a class="ww-book-cta text-center border rounded-pill book-btn btn"
+                   data-book-slug="@loc.Slug"
+                   href="@bookHref"
+                   target="@(bookHref == "#" ? "_self" : "_blank")"
+                   style="@(show ? "" : "display:none;")">
+                    Book at @loc.Name
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@foreach (var bag in locationRates)
+{
+    var loc = bag.Location;
+    var pkgs = bag.PartyPackage ?? new List<PartyPackage>();
+    var show = loc.Slug == firstSlug;
+    var passFront = loc.Slug == "bullhead-city" ? "~/img/PartyPackage/pm-125-bullhead.png" : "~/img/partypackage/pm-vp.png";
+    <div class="container ww-membership-block" data-membership-slug="@loc.Slug" style="@(show ? "" : "display:none;")">
+        <div class="row">
+            <div class="col-12 mb-3" data-aos="zoom-in" data-aos-duration="1000" data-aos-once="true">
+                <div class="text-center">
+                    <h2 class="text-center white-stroke" style="color: #ef6c00;">
+                        Packages and Membership
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="row d-md-flex d-xxl-flex justify-content-md-center justify-content-xxl-center">
+            @foreach (var item5 in pkgs.Where(p => p.PackageCategory == "MembershipVP"))
+            {
+                <div class="col-sm-6 col-md-6 col-lg-5 col-xl-5 col-xxl-5" data-aos="flip-right" data-aos-duration="1000" data-aos-once="true">
+                    <div class="container_card my_card">
+                        <div class="flipper">
+                            <div class="front">
+                                <img src="@Url.Content(passFront)" class="pm-img" alt="10 Visit Pass" />
+                            </div>
+                            <div class="back">
+                                <div class="text-center">
+                                    <h3 style="color: #ef6c00;">Inclusion</h3>
+                                </div>
+                                <ul class="ul-center ps-0">
+                                    @foreach (var subitem in pkgs.Where(p => p.PackageCategory == "MembershipVP1"))
+                                    {
+                                        <li class="text-start d-flex" style="color: var(--bs-body-color);">
+                                            <span class="bs-icon-rounded bs-icon me-2" style="color: #ef6223;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-check-lg">
+                                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022"></path>
+                                                </svg>
+                                            </span>
+                                            <span style="font-size: 16px;">@subitem.PackageDescription</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @foreach (var item5 in pkgs.Where(p => p.PackageCategory == "MembershipYP"))
+            {
+                <div class="col-sm-6 col-md-6 col-lg-5 col-xl-5 col-xxl-5" data-aos="flip-right" data-aos-duration="1000" data-aos-once="true">
+                    <div class="container_card my_card">
+                        <div class="flipper">
+                            <div class="front">
+                                <img src="~/img/partypackage/pm-yp.png" class="pm-img" alt="Yearly Pass" />
+                            </div>
+                            <div class="back">
+                                <div class="text-center">
+                                    <h3 style="color: #ef6c00;">Inclusion</h3>
+                                </div>
+                                <ul class="ul-center ps-0">
+                                    @foreach (var subitem2 in pkgs.Where(p => p.PackageCategory == "MembershipYP1"))
+                                    {
+                                        <li class="text-start d-flex" style="color: var(--bs-body-color);">
+                                            <span class="bs-icon-rounded bs-icon me-2" style="color: #ef6223;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-check-lg">
+                                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022"></path>
+                                                </svg>
+                                            </span>
+                                            <span style="font-size: 16px;">@subitem2.PackageDescription</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+<script>
+(function () {
+    function sync(slug) {
+        document.querySelectorAll('[data-book-slug]').forEach(function (btn) {
+            btn.style.display = btn.getAttribute('data-book-slug') === slug ? '' : 'none';
+        });
+        document.querySelectorAll('[data-membership-slug]').forEach(function (el) {
+            el.style.display = el.getAttribute('data-membership-slug') === slug ? '' : 'none';
+        });
+    }
+    document.querySelectorAll('a[href^="#tab-loc-"]').forEach(function (el) {
+        el.addEventListener('shown.bs.tab', function (e) {
+            var href = e.target.getAttribute('href') || '';
+            sync(href.replace('#tab-loc-', ''));
+        });
+    });
+})();
+</script>

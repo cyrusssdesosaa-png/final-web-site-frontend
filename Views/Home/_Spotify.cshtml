@@ -1,0 +1,20 @@
+@inject SiteContent Site
+<section class="ww-sec ww-sec-cyan" id="spotify">
+    <div class="ww-center">
+        <p class="ww-kicker">@Site.Text("spotify.kicker", "Listen with Wally")</p>
+        <h2>@Site.Text("spotify.title.lead", "Wally on") <span>@Site.Text("spotify.title.accent", "Spotify")</span></h2>
+        <p>@Site.Text("spotify.blurb", "Songs, stories, and sing-alongs from Wally Wombats. Press play here, or open it in Spotify.")</p>
+    </div>
+    <div class="ww-spotify">
+        <iframe title="Wally Wombats on Spotify"
+                src="@Site.Text("spotify.embed", "https://open.spotify.com/embed/artist/0Af4H36JSiCOv5ljeuPg0S?utm_source=generator")"
+                width="100%"
+                height="380"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                allowfullscreen></iframe>
+    </div>
+    <div class="ww-center">
+        <a class="ww-btn ww-btn-navy" href="@Site.Text("follow.spotify", SocialLinks.Spotify)" rel="noopener" data-app-link>Listen on Spotify</a>
+    </div>
+</section>

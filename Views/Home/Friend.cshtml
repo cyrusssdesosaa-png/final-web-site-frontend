@@ -1,0 +1,86 @@
+@model CharacterProfile
+@inject SiteContent Site
+@{
+    ViewData["Title"] = Model.Name;
+    var pals = Site.Friends().Where(c => c.Slug != Model.Slug).ToList();
+}
+
+<div class="ww-home ww-friend-page">
+    <section class="ww-sec ww-sec-yellow ww-friend-hero">
+        <a class="ww-text-link" asp-controller="Home" asp-action="Index" asp-fragment="crew">Back to Super Friends</a>
+        <div class="ww-friend-grid">
+            <img src="@Url.Content(Model.Image)" alt="@Model.Name" />
+            <div>
+                <p class="ww-kicker">@Model.Greeting</p>
+                <h2>@Model.Headline</h2>
+                <p>@Model.Intro</p>
+            </div>
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan">
+        <p class="ww-kicker">@Model.ShortName's story</p>
+        <h2>How the adventure began</h2>
+        <p class="ww-friend-story">@Model.Story</p>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+    <section class="ww-sec ww-sec-navy">
+        <p class="ww-kicker">Get to know @Model.ShortName</p>
+        <h2>Quick facts</h2>
+        <dl class="ww-friend-facts">
+            @foreach (var fact in Model.Facts)
+            {
+                <div>
+                    <dt>@fact.Key</dt>
+                    <dd>@fact.Value</dd>
+                </div>
+            }
+        </dl>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#ffda3d")" />
+    <section class="ww-sec ww-sec-yellow">
+        <div class="ww-friend-split">
+            <div>
+                <p class="ww-kicker">@Model.ShortName loves</p>
+                <h2>Favorite things</h2>
+                <ul class="ww-check">
+                    @foreach (var love in Model.Loves)
+                    {
+                        <li>@love</li>
+                    }
+                </ul>
+            </div>
+            <div class="ww-friend-fun">
+                <p class="ww-kicker">Did you know?</p>
+                <p>@Model.DidYouKnow</p>
+            </div>
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan">
+        <div class="ww-center">
+            <p class="ww-kicker">Super Friends</p>
+            <h2>Meet the rest of the crew</h2>
+        </div>
+        <div class="ww-crew ww-crew-more">
+            @foreach (var pal in pals)
+            {
+                <a class="ww-friend-card" asp-controller="Home" asp-action="Friend" asp-route-slug="@pal.Slug">
+                    <img src="@Url.Content(pal.Image)" alt="@pal.Name" />
+                    <strong>@pal.Name</strong>
+                    <span>@pal.Tagline</span>
+                    <em>Meet @pal.ShortName</em>
+                </a>
+            }
+        </div>
+        <div class="ww-center" style="margin-top:36px">
+            <a class="ww-btn ww-btn-navy" asp-controller="Home" asp-action="Index" asp-fragment="crew">Back to all friends</a>
+        </div>
+    </section>
+
+    <partial name="_WaveJoinWhite" />
+</div>

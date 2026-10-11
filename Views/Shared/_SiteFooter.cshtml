@@ -1,0 +1,37 @@
+@inject SiteContent Site
+@{
+    var navyFoot = string.Equals(ViewData["FooterTone"] as string, "navy", StringComparison.OrdinalIgnoreCase);
+}
+<footer class="ww-foot@(navyFoot ? " ww-foot-navy" : "")">
+    <div class="ww-foot-grid">
+        <div class="ww-foot-brand">
+            <img src="~/img/theme/brand/wally-badge.png" alt="Wally Wombats" />
+            <p>@Site.Text("footer.tagline", "Big adventures for little explorers and better family days for everyone.")</p>
+            <partial name="~/Views/Home/_AwardsBand.cshtml" />
+        </div>
+        <div>
+            <strong>Explore</strong>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="home">Home</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="crew">Friends</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="playground">Playground</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="arcade">Arcade</a>
+        </div>
+        <div>
+            <strong>Plan</strong>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="locations">Locations</a>
+            <a asp-controller="Home" asp-action="Find">See prices</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="birthdays">Birthdays</a>
+        </div>
+        <div>
+            <strong>Follow</strong>
+            <a href="@Site.Text("follow.youtube", SocialLinks.YouTube)" target="_blank" rel="noopener">YouTube</a>
+            <a href="@Site.Text("follow.facebook", SocialLinks.Facebook)" target="_blank" rel="noopener">Facebook</a>
+            <a href="@Site.Text("follow.instagram", SocialLinks.Instagram)" target="_blank" rel="noopener">Instagram</a>
+            <a href="@Site.Text("follow.tiktok", SocialLinks.TikTok)" target="_blank" rel="noopener">TikTok</a>
+            <a href="@Site.Text("follow.spotify", SocialLinks.Spotify)" target="_blank" rel="noopener">Spotify</a>
+        </div>
+        <div class="ww-foot-contact">
+            <a asp-controller="Home" asp-action="Index" asp-fragment="contact">Contact</a>
+        </div>
+    </div>
+</footer>

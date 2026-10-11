@@ -1,0 +1,152 @@
+@model WallyWombatsPublic_MVC.Models.LocationPageViewModel
+@{
+    ViewData["Title"]  = $"{Model.Location.Name} - Wally Wombats";
+    var hasYouTube     = !string.IsNullOrWhiteSpace(Model.Location.YoutubeUrl);
+    var hasMap         = !string.IsNullOrWhiteSpace(Model.Location.MapEmbedUrl);
+    var heroUrl        = Model.Location.HeroImageUrl ?? "";
+    var heroIsVideo    = heroUrl.EndsWith(".mp4", System.StringComparison.OrdinalIgnoreCase) || heroUrl.EndsWith(".webm", System.StringComparison.OrdinalIgnoreCase);
+    var heroIsImage    = !string.IsNullOrWhiteSpace(heroUrl) && !heroIsVideo;
+    var heroStyle      = heroIsImage ? $"background-image: url('{heroUrl}'); background-size: cover; background-position: center;" : "";
+}
+
+<link rel="stylesheet" href="~/css/locations.css" />
+
+@* ---------- HERO ---------- *@
+<section class="loc-hero" style="@heroStyle">
+    @if (heroIsVideo)
+    {
+        <div class="loc-hero__media">
+            <video autoplay muted loop playsinline>
+                <source src="@heroUrl" />
+            </video>
+        </div>
+    }
+
+    <div class="loc-hero__content container text-center">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb justify-content-center" style="--bs-breadcrumb-divider-color: rgba(255,255,255,.6);">
+                <li class="breadcrumb-item"><a href="/" class="text-white text-decoration-none opacity-75">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">@Model.Location.Name</li>
+            </ol>
+        </nav>
+
+        <h1 class="loc-hero__name">@Model.Location.Name</h1>
+
+        <div class="loc-hero__meta mt-3">
+            @if (!string.IsNullOrWhiteSpace(Model.Location.Address))
+            {
+                <div>@Model.Location.Address</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Location.Phone))
+            {
+                <div class="mt-1">
+                    <a href="tel:@Model.Location.Phone" class="text-white text-decoration-none">@Model.Location.Phone</a>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Location.HoursMonFri) || !string.IsNullOrWhiteSpace(Model.Location.HoursSatSun))
+            {
+                <div class="mt-2">
+                    <strong>Mon-Fri:</strong> @Model.Location.HoursMonFri &nbsp;|&nbsp;
+                    <strong>Sat-Sun:</strong> @Model.Location.HoursSatSun
+                </div>
+            }
+        </div>
+
+        <div class="mt-4 d-flex flex-wrap gap-3 justify-content-center">
+            <a class="loc-cta loc-cta--primary" asp-controller="Home" asp-action="Book" asp-route-slug="@Model.Location.Slug">See prices and book</a>
+            @if (!string.IsNullOrWhiteSpace(Model.Location.WaiverUrl))
+            {
+                <a class="loc-cta loc-cta--outline" href="@Model.Location.WaiverUrl" target="_blank" rel="noopener">Sign waiver</a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="loc-section" style="background:var(--ww-paper);">
+    <div class="container text-center">
+        <h2 class="loc-section__title">Ready to play at @Model.Location.Name?</h2>
+        <p class="mx-auto" style="max-width:36rem;">Daily rates, party packages, and passes for this club live on the booking page.</p>
+        <a class="loc-cta loc-cta--primary" asp-controller="Home" asp-action="Book" asp-route-slug="@Model.Location.Slug">See prices and book</a>
+    </div>
+</section>
+
+@* ---------- YOUTUBE EMBED ---------- *@
+@if (hasYouTube)
+{
+    <section class="loc-section" style="background:var(--ww-paper);">
+        <div class="container">
+            <h2 class="loc-section__title text-center">See the fun</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <iframe class="loc-embed"
+                            src="@Model.Location.YoutubeUrl"
+                            title="@Model.Location.Name video"
+                            allowfullscreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@* ---------- MAP ---------- *@
+@if (hasMap)
+{
+    <section class="loc-section">
+        <div class="container">
+            <h2 class="loc-section__title text-center">Find us</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <iframe class="loc-embed"
+                            src="@Model.Location.MapEmbedUrl"
+                            title="Map to @Model.Location.Name"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@* ---------- OTHER LOCATIONS ---------- *@
+@if (Model.OtherLocations.Any())
+{
+    <section class="loc-section" style="background:var(--ww-paper);">
+        <div class="container">
+            <h2 class="loc-section__title text-center">Visit our other locations</h2>
+            <div class="other-loc-grid">
+                @foreach (var loc in Model.OtherLocations)
+                {
+                    <a class="other-loc-card" href="/Locations/@loc.Slug">
+                        <div class="other-loc-card__name">@loc.Name</div>
+                        <div class="other-loc-card__addr">@loc.Address</div>
+                        @if (loc.ShowPromo && !string.IsNullOrWhiteSpace(loc.PromoHeadline))
+                        {
+                            <div class="mt-2"><span class="badge bg-warning text-dark">@loc.PromoHeadline</span></div>
+                        }
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@* ---------- PROMO POPUP (hidden by default; JS reveals if not dismissed) ---------- *@
+@if (Model.Location.ShowPromo && !string.IsNullOrWhiteSpace(Model.Location.PromoHeadline))
+{
+    <div id="loc-promo" class="loc-promo-backdrop" data-slug="@Model.Location.Slug" style="display:none;">
+        <div class="loc-promo-modal" role="dialog" aria-labelledby="loc-promo-headline">
+            <button type="button" class="loc-promo-modal__close" data-promo-close aria-label="Close">&times;</button>
+            <div class="loc-promo-modal__headline" id="loc-promo-headline">@Model.Location.PromoHeadline</div>
+            <div class="loc-promo-modal__body">@Html.Raw(Model.Location.PromoBody)</div>
+            <div class="text-end mt-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-promo-close>Maybe later</button>
+                @if (!string.IsNullOrWhiteSpace(Model.Location.TicketsUrl))
+                {
+                    <a class="btn btn-primary rounded-pill" href="@Model.Location.TicketsUrl" target="_blank" rel="noopener">Grab my spot</a>
+                }
+            </div>
+        </div>
+    </div>
+    <script src="~/js/locations-promo.js" defer></script>
+}

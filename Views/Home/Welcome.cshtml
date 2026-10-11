@@ -1,0 +1,202 @@
+@model WallyWombatsPublic_MVC.Models.WelcomeViewModel
+@{
+    ViewData["Title"] = "Welcome to Wally Wombats";
+}
+
+<link rel="stylesheet" href="~/css/locations.css" />
+
+<style>
+    /* page-only styles — colors come from the same :root tokens in locations.css */
+    .welcome-hero {
+        min-height: 320px;
+        max-height: 55vh;
+        background: linear-gradient(135deg, var(--ww-primary), var(--ww-primary-dark));
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 3rem 1rem;
+        border-bottom-left-radius: var(--ww-radius);
+        border-bottom-right-radius: var(--ww-radius);
+    }
+
+    .welcome-hero__title {
+        font-size: clamp(2.25rem, 5vw, 4rem);
+        font-weight: 800;
+        text-shadow: 2px 2px 0 rgba(0,0,0,.25);
+        margin-bottom: .5rem;
+    }
+
+    .welcome-hero__sub {
+        font-size: 1.25rem;
+        opacity: .95;
+    }
+
+    .picker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .picker-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--ww-card);
+        border-radius: var(--ww-radius);
+        overflow: hidden;
+        box-shadow: var(--ww-shadow-sm);
+        text-decoration: none;
+        color: var(--ww-ink);
+        transition: transform .2s ease, box-shadow .2s ease;
+        position: relative;
+        border-top: 6px solid var(--ww-primary);
+    }
+
+        .picker-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--ww-shadow-lg);
+            color: var(--ww-ink);
+            text-decoration: none;
+        }
+
+        .picker-card__media {
+            aspect-ratio: 16 / 10;
+            background: linear-gradient(135deg, var(--ww-primary), var(--ww-primary-dark)) center / cover no-repeat;
+            position: relative;
+        }
+
+        .picker-card__badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--ww-accent);
+            color: var(--ww-ink);
+            font-weight: 800;
+            font-size: .8rem;
+            padding: .4rem .8rem;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+
+        .picker-card__body {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .picker-card__name {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--ww-secondary);
+            margin-bottom: .25rem;
+        }
+
+        .picker-card__addr {
+            color: var(--ww-muted);
+            font-size: .95rem;
+            margin-bottom: .75rem;
+        }
+
+        .picker-card__hours {
+            font-size: .9rem;
+            color: var(--ww-ink);
+            margin-bottom: 1.25rem;
+        }
+
+            .picker-card__hours strong {
+                color: var(--ww-primary);
+                margin-right: .25rem;
+            }
+
+        .picker-card__cta {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .8rem 1.2rem;
+            background: var(--ww-primary);
+            color: #fff;
+            border-radius: 999px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+            .picker-card:hover .picker-card__cta {
+                background: var(--ww-primary-dark);
+            }
+
+    .explore-link {
+        display: inline-block;
+        margin-top: 2.5rem;
+        color: var(--ww-muted);
+        text-decoration: underline;
+        font-size: .95rem;
+    }
+
+        .explore-link:hover { color: var(--ww-primary); }
+</style>
+
+@* ---------- HERO ---------- *@
+<section class="welcome-hero">
+    <div class="container">
+        <h1 class="welcome-hero__title">Welcome to Wally Wombats</h1>
+        <p class="welcome-hero__sub">Pick your location to see prices, hours, and party packages.</p>
+    </div>
+</section>
+
+@* ---------- LOCATION PICKER ---------- *@
+<section class="loc-section">
+    <div class="container">
+        @if (Model.Locations.Count == 0)
+        {
+            <div class="alert alert-info text-center">
+                No locations are published yet. Please check back soon!
+            </div>
+        }
+        else
+        {
+            <div class="picker-grid">
+                @foreach (var loc in Model.Locations)
+                {
+                    var mediaStyle = string.IsNullOrWhiteSpace(loc.HeroImageUrl)
+                                      ? ""
+                                      : $"background-image: url('{loc.HeroImageUrl}');";
+                    <a class="picker-card" href="/Locations/@loc.Slug">
+                        <div class="picker-card__media" style="@mediaStyle">
+                            @if (loc.ShowPromo && !string.IsNullOrWhiteSpace(loc.PromoHeadline))
+                            {
+                                <span class="picker-card__badge">@loc.PromoHeadline</span>
+                            }
+                        </div>
+                        <div class="picker-card__body">
+                            <div class="picker-card__name">@loc.Name</div>
+                            @if (!string.IsNullOrWhiteSpace(loc.Address))
+                            {
+                                <div class="picker-card__addr">@loc.Address</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(loc.HoursMonFri) || !string.IsNullOrWhiteSpace(loc.HoursSatSun))
+                            {
+                                <div class="picker-card__hours">
+                                    <strong>Mon-Fri</strong>@loc.HoursMonFri<br />
+                                    <strong>Sat-Sun</strong>@loc.HoursSatSun
+                                </div>
+                            }
+                            <span class="picker-card__cta">
+                                See @loc.Name &rarr;
+                            </span>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+
+        <div class="text-center">
+            <a class="explore-link" href="/Home/Index">
+                Or explore our full playground experience
+            </a>
+        </div>
+    </div>
+</section>

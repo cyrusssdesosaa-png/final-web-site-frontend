@@ -1,0 +1,156 @@
+@model IList<Location>
+@{
+    var spots = (Model ?? new List<Location>())
+        .Select(loc => new
+        {
+            loc.Slug,
+            loc.Name,
+            loc.Address,
+            loc.Phone,
+            loc.HoursMonFri,
+            loc.HoursSatSun,
+            Image = LocationPhotos.CardImage(loc),
+            BookUrl = Url.Action("Book", "Home", new { slug = loc.Slug }),
+            DirectionsUrl = "/Locations/" + loc.Slug,
+            Coord = loc.Latitude is double lat && loc.Longitude is double lng
+                ? new MapCoord(lat, lng)
+                : LocationMapPins.Coords(loc.Slug)
+        })
+        .Where(x => x.Coord != null)
+        .Select(x => new
+        {
+            x.Slug,
+            x.Name,
+            x.Address,
+            x.Phone,
+            x.HoursMonFri,
+            x.HoursSatSun,
+            x.Image,
+            x.BookUrl,
+            x.DirectionsUrl,
+            Lat = x.Coord!.Value.Lat,
+            Lng = x.Coord.Value.Lng
+        })
+        .ToList();
+}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<div class="ww-map">
+    <div id="wwLeaflet" class="ww-leaflet" role="application" aria-label="Moveable map of Wally Wombats locations"></div>
+</div>
+<p class="ww-map-hint">Drag and zoom the map to look around. Zoom in, then tap a Wally pin to see that location's prices.</p>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    (function () {
+        var el = document.getElementById('wwLeaflet');
+        if (!el || typeof L === 'undefined') return;
+        var places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(spots));
+        var map = L.map(el, {
+            center: [35.72, -114.96],
+            zoom: 7,
+            minZoom: 4,
+            maxZoom: 14,
+            scrollWheelZoom: true,
+            worldCopyJump: false,
+            attributionControl: false,
+            maxBounds: [[14, -132], [52, -96]],
+            maxBoundsViscosity: 0.7
+        });
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 14
+        }).addTo(map);
+        var icon = L.icon({
+            iconUrl: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Content("~/img/Header/wally-badge.png"))),
+            iconSize: [54, 54],
+            iconAnchor: [27, 52],
+            popupAnchor: [0, -44]
+        });
+        function esc(value) {
+            return String(value || '').replace(/[&<>"']/g, function (ch) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+            });
+        }
+        function telHref(phone) {
+            return 'tel:' + String(phone || '').replace(/[^\d+]/g, '');
+        }
+        function cardHtml(place) {
+            var hours = '';
+            if (place.HoursMonFri) hours += '<p><strong>Mon-Fri</strong> ' + esc(place.HoursMonFri) + '</p>';
+            if (place.HoursSatSun) hours += '<p><strong>Sat-Sun</strong> ' + esc(place.HoursSatSun) + '</p>';
+            var call = place.Phone
+                ? '<a class="ww-btn ww-btn-navy" href="' + esc(telHref(place.Phone)) + '">Call ' + esc(place.Phone) + '</a>'
+                : '';
+            return ''
+                + '<article class="ww-pin-card">'
+                +   '<img class="ww-pin-pic" src="' + esc(place.Image) + '" alt="' + esc(place.Name) + '" />'
+                +   '<p class="ww-kicker">' + esc(place.Name) + '</p>'
+                +   '<h3>' + esc(place.Name) + '</h3>'
+                +   (place.Address ? '<p>' + esc(place.Address) + '</p>' : '')
+                +   hours
+                +   '<div class="ww-place-actions">'
+                +     '<a class="ww-btn" href="' + esc(place.BookUrl) + '">See prices and book</a>'
+                +     call
+                +     '<a class="ww-text-link" href="' + esc(place.DirectionsUrl) + '">Hours and directions</a>'
+                +   '</div>'
+                + '</article>';
+        }
+        var popOpts = {
+            className: 'ww-pin-pop',
+            maxWidth: 252,
+            minWidth: 232,
+            autoPan: true,
+            autoPanPadding: [18, 18]
+        };
+        var markers = [];
+        var flying = false;
+        places.forEach(function (place) {
+            var marker = L.marker([place.Lat, place.Lng], { icon: icon, title: place.Name }).addTo(map);
+            marker.bindTooltip(place.Name, {
+                permanent: true,
+                direction: 'bottom',
+                offset: [0, 4],
+                className: 'ww-map-label',
+                opacity: 1
+            });
+            marker.bindPopup(cardHtml(place), popOpts);
+            marker.off('click');
+            marker.on('click', function (event) {
+                L.DomEvent.stop(event);
+                marker.closeTooltip();
+                if (map.getZoom() >= 11) {
+                    marker.openPopup();
+                    return;
+                }
+                map.closePopup();
+                flying = true;
+                map.flyTo(marker.getLatLng(), 12, { duration: 0.55 });
+                map.once('moveend', function () {
+                    flying = false;
+                    marker.openPopup();
+                });
+            });
+            marker.on('popupopen', function () { marker.closeTooltip(); });
+            marker.on('popupclose', function () {
+                if (!flying && map.getZoom() >= 6) marker.openTooltip();
+            });
+            markers.push(marker);
+        });
+        function syncLabels() {
+            var show = map.getZoom() >= 6;
+            markers.forEach(function (marker) {
+                if (show && !marker.isPopupOpen()) marker.openTooltip();
+                else marker.closeTooltip();
+            });
+        }
+        map.on('zoomend', syncLabels);
+        setTimeout(function () {
+            map.invalidateSize();
+            if (places.length) {
+                map.fitBounds(places.map(function (place) { return [place.Lat, place.Lng]; }), {
+                    padding: [52, 52],
+                    maxZoom: 8
+                });
+            }
+            syncLabels();
+        }, 200);
+    })();
+</script>

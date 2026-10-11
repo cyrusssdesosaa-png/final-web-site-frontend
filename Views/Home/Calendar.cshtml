@@ -1,0 +1,93 @@
+@model HomeModel
+@{
+    ViewData["Title"] = "Calendar";
+    var locations = Model.Locations ?? new List<Location>();
+    var selected = ViewData["location"] as string;
+}
+
+<div class="video-container">
+    <video autoplay muted loop>
+        <source type="video/mp4" src="~/img/hero/ww-video.mp4" />
+    </video>
+    <div class="hero-title">
+        <img src="~/img/misc/ww-calendar.png" class="hero-title-img" data-aos="fade-up" data-aos-duration="1000" data-aos-once="true" />
+    </div>
+    <div class="hero-ww">
+        <img id="wave" src="~/img/Hero/ww-half.png" data-aos="slide-left" data-aos-duration="2000" data-aos-once="true" />
+    </div>
+    <div class="hero-wavy">
+        <img id="wave" src="~/img/misc/path-orange.svg" />
+    </div>
+</div>
+
+<section class="section-calendar">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-xl-8 text-center mx-auto">
+                <h1 class="fw-bold text-center white-stroke" style="color: #ef6c00;">
+                    Wally Wombats - Calendar Schedule
+                </h1>
+                <p class="w-lg-50" style="font-family: 'WWFont', serif;color: var(--bs-emphasis-color);font-size: 18px;">
+                    Plan your next visit at Wally Wombats with our easy-to-use Calendar page. Find out what events are happening, when, and where in just one click!
+                </p>
+            </div>
+        </div>
+
+        <div class="row mt-3 justify-content-center">
+            <div class="col-12 col-md-5 d-md-flex align-items-md-center mb-2 mb-md-0">
+                <span class="me-3" style="font-size:18px;">Date</span>
+                <input type="date" id="CalendarDate" value="@ViewData["InputDate"]"
+                       class="border rounded-pill flex-grow-1" style="padding: 10px 20px; font-size: 18px;" />
+            </div>
+
+            <div class="col-12 col-md-5 d-md-flex align-items-md-center mb-2 mb-md-0">
+                <span class="me-3" style="font-size:18px;">Location</span>
+                <select name="wwLocation" id="wwLocation"
+                        class="border rounded-pill form-select flex-grow-1" style="padding: 10px 20px; font-size: 18px;">
+                    <optgroup label="Location">
+                        @foreach (var loc in locations)
+                        {
+                            if (string.Equals(loc.Name, selected, StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option value="@loc.Name" selected>@loc.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@loc.Name">@loc.Name</option>
+                            }
+                        }
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-2 d-flex">
+                <button id="GetSchedule" class="ww-btn-calendar text-white text-decoration-none"
+                        style="border-radius:30px;padding: 10px 20px;">
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <div class="row" id="showCalendar">
+            <partial name="_PartialViewCalendar" model="Model" />
+        </div>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).on('click', '#GetSchedule', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: '/Home/GetCalendar',
+            type: 'GET',
+            data: {
+                date: $('#CalendarDate').val(),
+                location: $('#wwLocation').val()
+            },
+            success: function (partialView) {
+                $('#showCalendar').html(partialView);
+            }
+        });
+    });
+</script>

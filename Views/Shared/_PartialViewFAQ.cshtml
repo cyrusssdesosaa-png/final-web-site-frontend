@@ -1,0 +1,13 @@
+@* Forwarder for Jerickson's Home-only FAQ partial.
+    _PartialViewFAQ.cshtml is strongly typed to HomeModel and iterates Model.FAQViewModel.
+    When the current page uses a non-HomeModel view (e.g. WelcomeViewModel on `/`,
+    LocationPageViewModel on `/Locations/{slug}`), we build a transient HomeModel here
+    by resolving the DbContext from the request services, so the partial always has
+    the right shape without each page having to adopt HomeModel. *@
+@using Microsoft.Extensions.DependencyInjection
+@using WallyWombatsPublic_MVC.Models
+@{
+    var _ctx = ViewContext.HttpContext.RequestServices.GetRequiredService<WWContext>();
+    var _hm  = new HomeModel { FAQViewModel = _ctx.FAQ.ToList() };
+}
+<partial name="~/Views/Home/_PartialViewFAQ.cshtml" model="_hm" />

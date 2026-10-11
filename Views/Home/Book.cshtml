@@ -1,0 +1,376 @@
+@model HomeModel
+@{
+    ViewData["Title"] = "Pricing";
+    ViewData["FooterTone"] = "navy";
+    var locations = Model.Locations ?? new List<Location>();
+    var locationRates = Model.LocationRates ?? new List<LocationPricing>();
+    var requested = (ViewData["BookLoc"] as string ?? Context.Request.Query["loc"].ToString() ?? "").Trim();
+    if (!string.IsNullOrWhiteSpace(requested))
+    {
+        locations = locations.Where(l => string.Equals(l.Slug, requested, StringComparison.OrdinalIgnoreCase)).ToList();
+        locationRates = locationRates.Where(b => string.Equals(b.Location.Slug, requested, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+    var firstSlug = locationRates.FirstOrDefault()?.Location?.Slug ?? locations.FirstOrDefault()?.Slug ?? "";
+    var selectedLoc = locationRates.FirstOrDefault(b => b.Location.Slug == firstSlug)?.Location ?? locations.FirstOrDefault();
+    var selectedName = selectedLoc?.Name ?? "your Wally";
+    var bookPics = LocationPhotos.For(selectedLoc);
+    var partyArt = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Bilby"] = "~/img/theme/parties/bilby-package.jpg",
+        ["Tassie"] = "~/img/theme/parties/tassie-package.jpg",
+        ["Wallaby"] = "~/img/theme/parties/wallaby-package.jpg",
+        ["Emu"] = "~/img/theme/parties/emu-package.jpg"
+    };
+    var vpFallback = new[]
+    {
+        "Enjoy 10 visits to our indoor playground for a discounted per-visit rate. Can only be used at the location you purchased it at.",
+        "Perfect option for families looking to save while still enjoying all the fun and excitement our facilities has to offer"
+    };
+    var ypFallback = new[]
+    {
+        "Unlimited visits to our indoor playground for an entire year. Can only be used at the location you purchased it at.",
+        "Get 5% off at our cafe, serving up delicious treats and snacks",
+        "Enjoy a 10% discount when booking your child's birthday party with us"
+    };
+    var ticketFallback = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["bullhead-city"] = "https://ecom.roller.app/wallywombatsbullheadcity/buynow/en-us/products"
+    };
+    string BookHref(Location loc)
+    {
+        var href = (loc.TicketsUrl ?? "").Trim();
+        if (!string.IsNullOrWhiteSpace(href)) return href;
+        return ticketFallback.TryGetValue(loc.Slug ?? "", out var fallback) ? fallback : "";
+    }
+    string ChildLabel(int n, int total) => n switch
+    {
+        1 => "One Child",
+        2 => "Two Child",
+        3 => "Three Child",
+        4 => total <= 4 ? "Four Child+" : "Four Child",
+        5 => "Five Child",
+        _ => n + " Child"
+    };
+    string PeekLine(string slug) => (slug ?? "").Trim().ToLowerInvariant() switch
+    {
+        "las-vegas" => "Come join and play on Rainbow",
+        "henderson" => "Come bounce and play in Henderson",
+        "bullhead-city" => "Come play all day in Bullhead",
+        _ => "Come join and play"
+    };
+}
+
+<div class="ww-home ww-book">
+    <section class="ww-sec ww-sec-white" id="waiver">
+        <a class="ww-book-back" asp-controller="Home" asp-action="Find">Back to locations</a>
+        <div class="ww-admit">
+        <div class="ww-center">
+            <p class="ww-kicker">Plan your Wally day</p>
+            <h2>General <span>admission</span></h2>
+            <p>Whether you are planning a birthday bash or looking for regular playtime, pick the visit that fits your crew.</p>
+        </div>
+        <div class="ww-book-peek @(bookPics.Count > 0 ? "has-pics" : "")">
+            <div class="ww-waiver">
+                <div class="ww-waiver-copy">
+                    <p class="ww-kicker">Visit Wally Wombats</p>
+                    <h3>Complete a waiver first</h3>
+                    <p>Finish the waiver form, then come back here and choose your preferred option.</p>
+                </div>
+                <div class="ww-waiver-links">
+                    @foreach (var loc in locations)
+                    {
+                        if (string.IsNullOrWhiteSpace(loc.WaiverUrl))
+                        {
+                            continue;
+                        }
+                        <a class="ww-btn ww-btn-navy" href="@loc.WaiverUrl" target="_blank" rel="noopener">@loc.Name waiver</a>
+                    }
+                </div>
+                @if (bookPics.Count > 0)
+                {
+                    <img class="ww-book-buddy" src="~/img/theme/characters/stand-wally.png" alt="Wally" />
+                }
+            </div>
+            @if (bookPics.Count > 0)
+            {
+                <div class="ww-book-show" data-book-show>
+                    <div class="ww-book-show-card">
+                        <p class="ww-kicker">@PeekLine(firstSlug)</p>
+                        <div class="ww-book-show-stage" data-gallery="location">
+                            @for (var i = 0; i < bookPics.Count; i++)
+                            {
+                                <figure class="ww-book-slide @(i == 0 ? "is-on" : "")">
+                                    <button type="button" class="ww-book-pic" data-pic="@bookPics[i]">
+                                        <img src="@bookPics[i]" alt="@selectedName playground photo @(i + 1)" />
+                                    </button>
+                                </figure>
+                            }
+                        </div>
+                        <div class="ww-book-show-bar">
+                            <button type="button" class="ww-book-show-arrow" data-show-prev aria-label="Previous photo">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6 L9 12 L15 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            </button>
+                            <div class="ww-book-show-dots">
+                                @for (var i = 0; i < bookPics.Count; i++)
+                                {
+                                    <button type="button" class="ww-book-show-dot @(i == 0 ? "is-on" : "")" data-show-dot="@i" aria-label="Photo @(i + 1)"></button>
+                                }
+                            </div>
+                            <button type="button" class="ww-book-show-arrow" data-show-next aria-label="Next photo">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6 L15 12 L9 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        </div>
+        @if (bookPics.Count > 0)
+        {
+            <div class="ww-pic-view" id="wwPicView" hidden>
+                <button type="button" class="ww-pic-view-close" aria-label="Close photo">×</button>
+                <img alt="@selectedName playground" />
+            </div>
+        }
+    </section>
+
+    <partial name="_WaveJoin" model="@("#61c9e8")" />
+    <section class="ww-sec ww-sec-cyan" id="rates">
+        <div class="ww-center">
+            <p class="ww-kicker">Everyday play</p>
+            <h2>Daily rates</h2>
+            <p class="ww-book-loc" data-loc-label>Prices for @selectedName</p>
+            <p>Two adults are included with every paid child. Each additional adult is $5.</p>
+        </div>
+        @if (locationRates.Count > 1)
+        {
+        <div class="ww-pick" data-pick="rates">
+            <div class="ww-pick-row">
+                @foreach (var bag in locationRates)
+                {
+                    <button type="button" class="ww-pick-btn @(bag.Location.Slug == firstSlug ? "is-on" : "")" data-loc="@bag.Location.Slug">@bag.Location.Name</button>
+                }
+            </div>
+        </div>
+        }
+        <div class="ww-trail" data-board="rates">
+            @foreach (var bag in locationRates)
+            {
+                var ga = bag.GeneralAdmission ?? new List<GeneralAdmission>();
+                var rates = ga.Where(g => g.GACategory == "Weekdays").OrderBy(g => g.GAPrice).ToList();
+                if (rates.Count == 0) rates = ga.Where(g => g.GACategory == "Weekend").OrderBy(g => g.GAPrice).ToList();
+                var n = 1;
+                var total = rates.Count;
+                var on = bag.Location.Slug == firstSlug;
+                foreach (var rate in rates)
+                {
+                    <article class="ww-price-card" data-loc="@bag.Location.Slug" style="@(on ? "" : "display:none")">
+                        <strong>$@Money.Display(rate.GAPrice)</strong>
+                        <small>@ChildLabel(n, total)</small>
+                    </article>
+                    n++;
+                }
+                var bookHref = BookHref(bag.Location);
+                if (!string.IsNullOrWhiteSpace(bookHref))
+                {
+                    <article class="ww-price-card ww-book-cta" data-loc="@bag.Location.Slug" style="@(on ? "" : "display:none")">
+                        <a class="ww-btn ww-btn-navy" href="@bookHref" target="_blank" rel="noopener">Book at @bag.Location.Name</a>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <partial name="_Specials" model="locationRates" />
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+    <section class="ww-sec ww-sec-navy" id="birthdays">
+        <div class="ww-center">
+            <p class="ww-kicker">Birthdays at Wally's</p>
+            <h2>Party packages</h2>
+            <p>Every package includes a private party experience and all-day play. Weekday and weekend rates are different.</p>
+        </div>
+        <div class="ww-pick" data-pick="parties">
+            @if (locationRates.Count > 1)
+            {
+            <div class="ww-pick-row">
+                @foreach (var bag in locationRates)
+                {
+                    <button type="button" class="ww-pick-btn @(bag.Location.Slug == firstSlug ? "is-on" : "")" data-loc="@bag.Location.Slug">@bag.Location.Name</button>
+                }
+            </div>
+            }
+            <div class="ww-pick-row">
+                <button type="button" class="ww-pick-btn is-on" data-day="Weekdays">Weekdays</button>
+                <button type="button" class="ww-pick-btn" data-day="Weekend">Weekend</button>
+            </div>
+        </div>
+        <div class="ww-parties" data-board="parties">
+            @foreach (var bag in locationRates)
+            {
+                var pkgs = (bag.PartyPackage ?? new List<PartyPackage>())
+                    .Where(p => p.PackageCategory == "Weekdays" || p.PackageCategory == "Weekend")
+                    .OrderBy(p => p.PackageCategory == "Weekend")
+                    .ThenBy(p => p.PackagePrice)
+                    .ToList();
+                var on = bag.Location.Slug == firstSlug;
+                foreach (var party in pkgs)
+                {
+                    var key = (party.PackageName ?? "").Split(' ').FirstOrDefault() ?? "";
+                    var art = partyArt.ContainsKey(key) ? partyArt[key] : party.PackageImage;
+                    var showParty = on && party.PackageCategory == "Weekdays";
+                    <article class="ww-price-card" data-loc="@bag.Location.Slug" data-day="@party.PackageCategory" style="@(showParty ? "" : "display:none")">
+                        @if (!string.IsNullOrWhiteSpace(art))
+                        {
+                            <img src="@Url.Content(art)" alt="@party.PackageName" />
+                        }
+                        <h3>@party.PackageName</h3>
+                        <strong>$@Money.Display(party.PackagePrice)</strong>
+                        <ul class="ww-check">
+                            @foreach (var part in (party.PackageDescription ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <li>@part.Trim()</li>
+                            }
+                        </ul>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#ffda3d")" />
+    <section class="ww-sec ww-sec-yellow" id="included">
+        <div class="ww-include">
+            <img src="~/img/theme/characters/stand-wally.png" alt="Wally" />
+            <div>
+                <p class="ww-kicker">Party details</p>
+                <h2>What's included?</h2>
+                <ul class="ww-check">
+                    @{
+                        var included = locationRates
+                            .SelectMany(b => b.PartyPackage ?? new List<PartyPackage>())
+                            .Where(p => p.PackageCategory == "Inclusion")
+                            .Select(p => p.PackageDescription)
+                            .Where(d => !string.IsNullOrWhiteSpace(d))
+                            .Distinct()
+                            .ToList();
+                    }
+                    @foreach (var line in included)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
+            </div>
+            <img src="~/img/theme/characters/stand-dondon.png" alt="DonDon" />
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+    <section class="ww-sec ww-sec-navy" id="passes">
+        <div class="ww-center">
+            <p class="ww-kicker">Regular play value</p>
+            <h2>Packages and membership</h2>
+            <p>More visits, more adventures, and more ways to save.</p>
+        </div>
+        @if (locationRates.Count > 1)
+        {
+        <div class="ww-pick" data-pick="passes">
+            <div class="ww-pick-row">
+                @foreach (var bag in locationRates)
+                {
+                    <button type="button" class="ww-pick-btn @(bag.Location.Slug == firstSlug ? "is-on" : "")" data-loc="@bag.Location.Slug">@bag.Location.Name</button>
+                }
+            </div>
+        </div>
+        }
+        <div class="ww-passes" data-board="passes">
+            @foreach (var bag in locationRates)
+            {
+                var pkgs = bag.PartyPackage ?? new List<PartyPackage>();
+                var ga = bag.GeneralAdmission ?? new List<GeneralAdmission>();
+                var vp = pkgs.FirstOrDefault(p => p.PackageCategory == "MembershipVP");
+                var yp = pkgs.FirstOrDefault(p => p.PackageCategory == "MembershipYP");
+                var gaPass = ga.FirstOrDefault(g => g.GACategory == "Pass");
+                var gaMem = ga.FirstOrDefault(g => g.GACategory == "Membership");
+                var on = bag.Location.Slug == firstSlug;
+                var vpBits = pkgs.Where(p => p.PackageCategory == "MembershipVP1").Select(p => p.PackageDescription).Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
+                var ypBits = pkgs.Where(p => p.PackageCategory == "MembershipYP1").Select(p => p.PackageDescription).Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
+                if (vpBits.Count == 0) { vpBits = vpFallback.ToList(); }
+                if (ypBits.Count == 0) { ypBits = ypFallback.ToList(); }
+                var tenPrice = vp?.PackagePrice ?? gaPass?.GAPrice ?? 0;
+                var yearPrice = yp?.PackagePrice ?? gaMem?.GAPrice ?? 0;
+                if ((vp != null || gaPass != null) && tenPrice > 0)
+                {
+                    <article class="ww-price-card" data-loc="@bag.Location.Slug" style="@(on ? "" : "display:none")">
+                        <div class="ww-stub"><span>10</span><small>visits</small></div>
+                        <div>
+                            <p class="ww-kicker">Multi-visit pass</p>
+                            <strong>$@Money.Display(tenPrice)</strong>
+                            <h3>@(vp?.PackageName ?? gaPass?.GAName ?? "10 Visit Pass")</h3>
+                            <ul class="ww-check">
+                                @foreach (var bit in vpBits)
+                                {
+                                    <li>@bit</li>
+                                }
+                            </ul>
+                        </div>
+                    </article>
+                }
+                if ((yp != null || gaMem != null) && yearPrice > 0)
+                {
+                    <article class="ww-price-card" data-loc="@bag.Location.Slug" style="@(on ? "" : "display:none")">
+                        <div class="ww-stub"><span>365</span><small>days</small></div>
+                        <div>
+                            <p class="ww-kicker">Unrestricted play</p>
+                            <strong>$@Money.Display(yearPrice)</strong>
+                            <h3>@(yp?.PackageName ?? gaMem?.GAName ?? "Yearly Pass")</h3>
+                            <ul class="ww-check">
+                                @foreach (var bit in ypBits)
+                                {
+                                    <li>@bit</li>
+                                }
+                            </ul>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoinWhite" />
+    <section class="ww-sec ww-sec-white" id="booknow">
+        <div class="ww-center">
+            <p class="ww-kicker">The whole crew is in</p>
+            <h2>Ready to <span>book now?</span></h2>
+            <p>Wally, NaeNae, Bunski, DonDon and LenLen are waiting at @selectedName. Lock in the fun.</p>
+        </div>
+        <img class="ww-book-end-art" src="~/img/misc/ww-super-friends-book-v3.png" alt="Wally and friends waving you in" />
+        @if (locationRates.Count > 1)
+        {
+        <div class="ww-pick" data-pick="booknow">
+            <div class="ww-pick-row">
+                @foreach (var bag in locationRates)
+                {
+                    <button type="button" class="ww-pick-btn @(bag.Location.Slug == firstSlug ? "is-on" : "")" data-loc="@bag.Location.Slug">@bag.Location.Name</button>
+                }
+            </div>
+        </div>
+        }
+        <div class="ww-book-end" data-board="booknow">
+            @foreach (var bag in locationRates)
+            {
+                var bookHref = BookHref(bag.Location);
+                if (string.IsNullOrWhiteSpace(bookHref))
+                {
+                    continue;
+                }
+                var on = bag.Location.Slug == firstSlug;
+                <article class="ww-price-card ww-book-cta" data-loc="@bag.Location.Slug" style="@(on ? "" : "display:none")">
+                    <a class="ww-btn ww-btn-navy" href="@bookHref" target="_blank" rel="noopener">Book at @bag.Location.Name</a>
+                </article>
+            }
+        </div>
+    </section>
+
+    <partial name="_WaveJoin" model="@("#092e4f")" />
+</div>
