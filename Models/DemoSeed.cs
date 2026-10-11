@@ -126,7 +126,28 @@ public static class DemoSeed
             }
         }
 
-        db.PartyPackage.Add(new PartyPackage { LocationId = locationId, PackageCategory = "MembershipVP", PackageName = "10 Visit Pass", PackagePrice = passes.vp, PackageDescription = "Ten visits at the location you purchased it." });
+		foreach (var line in new[]
+		{
+			"Special Birthday Chair",
+			"Themed party decorations including balloons, table clothes, plates & napkins, Wally Wombats socks for each child",
+			"Your choice Soda, Lemonade or Fruit Punch + Water for kids",
+			"Pizza",
+			"Wally Wombats invitations",
+			"Up to two adults are included for free with each child's paid admission",
+			"All day playtime at our playground or an experience in our Arcade Room"
+		})
+		{
+			db.PartyPackage.Add(new PartyPackage
+			{
+				LocationId = locationId,
+				PackageCategory = "Inclusion",
+				PackageName = "",
+				PackagePrice = 0,
+				PackageDescription = line
+			});
+		}
+
+		db.PartyPackage.Add(new PartyPackage { LocationId = locationId, PackageCategory = "MembershipVP", PackageName = "10 Visit Pass", PackagePrice = passes.vp, PackageDescription = "Ten visits at the location you purchased it." });
         db.PartyPackage.Add(new PartyPackage { LocationId = locationId, PackageCategory = "MembershipYP", PackageName = "Yearly Pass", PackagePrice = passes.yp, PackageDescription = "Unlimited visits for one year at the location you purchased it." });
         db.PartyPackage.Add(new PartyPackage { LocationId = locationId, PackageCategory = "MembershipVP1", PackageName = "10 Visit include", PackagePrice = 0, PackageDescription = "Enjoy 10 visits to our indoor playground for a discounted rate. Can only be used at the location you purchased it at." });
         db.PartyPackage.Add(new PartyPackage { LocationId = locationId, PackageCategory = "MembershipYP1", PackageName = "Yearly include", PackagePrice = 0, PackageDescription = "Unlimited visits to our indoor playground for an entire year. Can only be used at the location you purchased it at." });
