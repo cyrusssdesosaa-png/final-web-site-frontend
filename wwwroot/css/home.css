@@ -2438,3 +2438,15 @@
     .ww-gal-prev { left: 8px; }
     .ww-gal-next { right: 8px; }
 }
+
+/* Soro blog embed on home (matches testimonial cards) */
+#blog .ww-blog-embed {
+    grid-template-columns: 1fr;
+    max-width: 980px;
+}
+#blog .ww-blog-embed blockquote {
+    min-height: 0;
+}
+#blog .ww-blog-embed #soro-blog {
+    width: 100%;
+}
