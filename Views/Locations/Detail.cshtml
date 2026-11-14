@@ -117,7 +117,7 @@
             <div class="other-loc-grid">
                 @foreach (var loc in Model.OtherLocations)
                 {
-                    <a class="other-loc-card" href="/Locations/@loc.Slug">
+                    <a class="other-loc-card" href="/locations/@loc.Slug">
                         <div class="other-loc-card__name">@loc.Name</div>
                         <div class="other-loc-card__addr">@loc.Address</div>
                         @if (loc.ShowPromo && !string.IsNullOrWhiteSpace(loc.PromoHeadline))

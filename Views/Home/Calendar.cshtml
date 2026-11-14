@@ -79,7 +79,7 @@
     $(document).on('click', '#GetSchedule', function (e) {
         e.preventDefault();
         $.ajax({
-            url: '/Home/GetCalendar',
+            url: '/home/getcalendar',
             type: 'GET',
             data: {
                 date: $('#CalendarDate').val(),

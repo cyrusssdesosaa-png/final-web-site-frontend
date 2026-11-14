@@ -145,37 +145,12 @@ public class HomeController : Controller
 		return View(hm);
 	}
 
-	public IActionResult MoreBlogPost()
-	{
-		int bc = (int)TempData["BlogCount"];
-		List<Blog> blog = (from e in _context.Blog
-			where e.IsPublished == true
-			orderby e.DateCreated descending
-			select e).Skip(bc).Take(4).ToList();
-		HomeModel hm = new HomeModel
-		{
-			BlogViewModel = blog
-		};
-		TempData["BlogCount"] = (int)TempData["BlogCount"] + 4;
-		int loadMore = blog.Count();
-		return PartialView("_PartialViewBlog", hm);
-	}
+	// Old "Load more" endpoint. TempData was null on a fresh request and this threw HTTP 500.
+	public IActionResult MoreBlogPost() => RedirectPermanent("/blog");
 
+	// Old /post?id= articles. The view null-referenced when the row was missing and Google saw HTTP 500.
 	[Route("post")]
-	public IActionResult BlogPost(int id, string catname)
-	{
-		Blog blog = _context.Blog.Where((Blog e) => e.Id == id).FirstOrDefault();
-		IList<Blog> blogposts = _context.Blog.Where((Blog e) => e.Id != id && e.CategoryName == catname).ToList();
-		ViewBag.BlogCategory = catname;
-		IList<FAQ> Faq = _context.FAQ.ToList();
-		HomeModel hm = new HomeModel
-		{
-			FAQViewModel = Faq,
-			blog = blog,
-			BlogPosts = blogposts
-		};
-		return View(hm);
-	}
+	public IActionResult BlogPost() => RedirectPermanent("/blog");
 
 	[Route("calendar")]
 	public IActionResult Calendar()
@@ -282,6 +257,9 @@ public class HomeController : Controller
 	[HttpPost]
 	public async Task<IActionResult> SendEmail_Index(EmailViewModel model)
 	{
+		if (!Request.HasFormContentType)
+			return HomeAgain();
+
 		var loc = Request.Form["LocationName"].ToString();
 		var body = "Full Name: " + model.FirstName + " " + model.LastName + "<br />Email Address: " + model.EmailAddress + "<br />Phone Number: " + model.PhoneNumber + "<br />Location: " + loc + "<br />Message: " + model.Message;
 		var sent = await _emailService.SendEmailAsync(body, model.EmailAddress);
@@ -379,6 +357,8 @@ public class HomeController : Controller
 	[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 	public IActionResult Error()
 	{
+		ViewData["Robots"] = "noindex";
+		ViewData["SuppressCanonical"] = true;
 		return View(new ErrorViewModel
 		{
 			RequestId = (Activity.Current?.Id ?? HttpContext.TraceIdentifier)
