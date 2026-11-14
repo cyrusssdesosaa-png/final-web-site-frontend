@@ -1,5 +1,6 @@
 @inject WWContext Db
 @inject SiteContent Site
+@inject WallyWombatsPublic_MVC.Seo.SeoLinkBuilder Seo
 @{
     var navLocs = new List<Location>();
     try
@@ -17,6 +18,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Wally Wombats</title>
+    @if (ViewData["SuppressCanonical"] as bool? != true && Context.Response.StatusCode < 400)
+    {
+        <link rel="canonical" href="@Seo.CanonicalHref(Context.Request)" />
+    }
+    @if (ViewData["Robots"] is string robotsDirective)
+    {
+        <meta name="robots" content="@robotsDirective" />
+    }
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/aos.min.css" asp-append-version="true" />

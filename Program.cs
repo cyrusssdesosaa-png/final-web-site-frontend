@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using WallyWombatsPublic_MVC.Models;
+using WallyWombatsPublic_MVC.Seo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,14 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 20_000_000;
 });
 
+builder.Services.Configure<SiteOptions>(builder.Configuration.GetSection("Site"));
+builder.Services.AddSingleton(sp =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<SiteOptions>>().Value;
+    return new SeoRedirector(options.OfficialOrigin);
+});
+builder.Services.AddSingleton<SeoLinkBuilder>();
+
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddHostedService<SocialRefreshService>();
 builder.Services.AddHttpClient<YouTubeChannelService>(client =>
@@ -77,13 +86,52 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-if (!useDemo && !app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+// Replaces UseHttpsRedirection so HTTP upgrades are 301, not the framework default 307.
+// Local hosts stay on http inside SeoRedirector. POST is not redirected.
+app.UseMiddleware<SeoRedirectMiddleware>();
+app.UseStatusCodePagesWithReExecute("/status/{0}");
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
+
+app.MapGet("/robots.txt", (SeoRedirector seo) =>
+{
+    var body = "User-agent: *\nAllow: /\n\nSitemap: " + seo.Origin + "/sitemap.xml\n";
+    return Results.Text(body, "text/plain");
+});
+
+app.MapGet("/sitemap.xml", async (WWContext db, SeoRedirector seo, CancellationToken ct) =>
+{
+    IReadOnlyList<string> locationSlugs = Array.Empty<string>();
+    var friendSlugs = new List<string>(SitemapXml.DefaultFriendSlugs);
+    try
+    {
+        locationSlugs = (await db.Location.AsNoTracking()
+            .Where(l => l.IsActive && l.Slug != null && l.Slug != "")
+            .OrderBy(l => l.SortOrder)
+            .Select(l => l.Slug)
+            .ToListAsync(ct))
+            .Select(s => s.Trim().ToLowerInvariant())
+            .ToList();
+
+        var fromDb = await db.Friends.AsNoTracking()
+            .Where(f => f.IsActive && f.Slug != null && f.Slug != "")
+            .OrderBy(f => f.SortOrder)
+            .Select(f => f.Slug)
+            .ToListAsync(ct);
+        foreach (var slug in fromDb)
+        {
+            if (!friendSlugs.Contains(slug, StringComparer.OrdinalIgnoreCase))
+                friendSlugs.Add(slug);
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Sitemap omitted database URLs because the database could not be read.");
+    }
+
+    return Results.Text(SitemapXml.Build(seo.Origin, locationSlugs, friendSlugs), "application/xml");
+});
 
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 

@@ -5,7 +5,7 @@ using WallyWombatsPublic_MVC.Models;
 namespace WallyWombatsPublic_MVC.Controllers;
 
 /// <summary>
-/// Public-facing single-location page at /Locations/{slug}.
+/// Public-facing single-location page at /locations/{slug}.
 /// Added Oct 2026 to support the "pick your location" architecture.
 /// Admin manages Location data at admin.wallywombats.com/Locations.
 /// </summary>
@@ -19,17 +19,18 @@ public class LocationsController : Controller
     }
 
     /// <summary>
-    /// GET /Locations/{slug}  — e.g. /Locations/henderson
+    /// GET /locations/{slug}  — e.g. /locations/henderson
     /// Returns 404 if slug is missing, unknown, or the location is deactivated.
     /// </summary>
-    [HttpGet("Locations/{slug}")]
+    [HttpGet("locations/{slug}")]
     public async Task<IActionResult> Detail(string slug)
     {
         if (string.IsNullOrWhiteSpace(slug))
             return NotFound();
 
+        var normalized = slug.Trim().ToLowerInvariant();
         var location = await _context.Location.FirstOrDefaultAsync(l =>
-            l.Slug == slug && l.IsActive);
+            l.IsActive && l.Slug != null && l.Slug.ToLower() == normalized);
         if (location == null)
             return NotFound();
 
@@ -62,9 +63,8 @@ public class LocationsController : Controller
     }
 
     /// <summary>
-    /// GET /Locations — redirects to home (which will later host the location picker grid).
-    /// Phase C may replace this with a dedicated picker page.
+    /// GET /locations — the club list lives on the homepage. Permanent, not the old 302.
     /// </summary>
-    [HttpGet("Locations")]
-    public IActionResult Index() => RedirectToAction("Index", "Home");
+    [HttpGet("locations")]
+    public IActionResult Index() => RedirectPermanent("/#locations");
 }

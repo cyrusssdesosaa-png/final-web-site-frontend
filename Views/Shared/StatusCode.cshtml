@@ -1,0 +1,33 @@
+@{
+    var code = ViewData["StatusCode"] as int? ?? 404;
+    var missing = code == 404;
+    ViewData["Title"] = missing ? "Page not found" : "Something went wrong";
+    ViewData["Robots"] = "noindex";
+    ViewData["SuppressCanonical"] = true;
+    var original = ViewData["OriginalPath"] as string;
+}
+
+<section class="ww-sec ww-sec-yellow" style="min-height: 50vh; padding: 4rem 1.5rem;">
+    <div class="ww-center">
+        <p class="ww-kicker">@code</p>
+        @if (missing)
+        {
+            <h1>We can't find that page.</h1>
+            <p>That address is not on Wally Wombats. It may be an old link, or the name may be mistyped.</p>
+        }
+        else
+        {
+            <h1>Something went wrong.</h1>
+            <p>Please try again in a moment. If it keeps happening, call the club and we will help.</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(original))
+        {
+            <p><code>@original</code></p>
+        }
+        <p>
+            <a class="ww-btn" href="/">Home</a>
+            <a class="ww-btn ww-btn-navy" href="/book">Book</a>
+            <a class="ww-btn ww-btn-navy" href="/blog">Blog</a>
+        </p>
+    </div>
+</section>

@@ -11,7 +11,7 @@
             loc.HoursSatSun,
             Image = LocationPhotos.CardImage(loc),
             BookUrl = Url.Action("Book", "Home", new { slug = loc.Slug }),
-            DirectionsUrl = "/Locations/" + loc.Slug,
+            DirectionsUrl = "/locations/" + loc.Slug,
             Coord = loc.Latitude is double lat && loc.Longitude is double lng
                 ? new MapCoord(lat, lng)
                 : LocationMapPins.Coords(loc.Slug)

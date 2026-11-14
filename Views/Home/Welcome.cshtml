@@ -164,7 +164,7 @@
                     var mediaStyle = string.IsNullOrWhiteSpace(loc.HeroImageUrl)
                                       ? ""
                                       : $"background-image: url('{loc.HeroImageUrl}');";
-                    <a class="picker-card" href="/Locations/@loc.Slug">
+                    <a class="picker-card" href="/locations/@loc.Slug">
                         <div class="picker-card__media" style="@mediaStyle">
                             @if (loc.ShowPromo && !string.IsNullOrWhiteSpace(loc.PromoHeadline))
                             {
@@ -194,7 +194,7 @@
         }
 
         <div class="text-center">
-            <a class="explore-link" href="/Home/Index">
+            <a class="explore-link" href="/">
                 Or explore our full playground experience
             </a>
         </div>
