@@ -50,6 +50,15 @@ builder.Services.AddSingleton(sp =>
 });
 builder.Services.AddSingleton<SeoLinkBuilder>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<SoroBlogClient>(client =>
+{
+    client.BaseAddress = new Uri("https://app.trysoro.com/");
+    client.Timeout = TimeSpan.FromSeconds(8);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; WallyWombatsSite/1.0)");
+});
+builder.Services.AddScoped<BlogFeed>();
+
 builder.Services.AddSingleton<EmailService>();
 builder.Services.AddHostedService<SocialRefreshService>();
 builder.Services.AddHttpClient<YouTubeChannelService>(client =>
@@ -100,10 +109,11 @@ app.MapGet("/robots.txt", (SeoRedirector seo) =>
     return Results.Text(body, "text/plain");
 });
 
-app.MapGet("/sitemap.xml", async (WWContext db, SeoRedirector seo, CancellationToken ct) =>
+app.MapGet("/sitemap.xml", async (WWContext db, SeoRedirector seo, BlogFeed blog, CancellationToken ct) =>
 {
     IReadOnlyList<string> locationSlugs = Array.Empty<string>();
     var friendSlugs = new List<string>(SitemapXml.DefaultFriendSlugs);
+    IReadOnlyList<string> blogSlugs = Array.Empty<string>();
     try
     {
         locationSlugs = (await db.Location.AsNoTracking()
@@ -130,9 +140,35 @@ app.MapGet("/sitemap.xml", async (WWContext db, SeoRedirector seo, CancellationT
         app.Logger.LogWarning(ex, "Sitemap omitted database URLs because the database could not be read.");
     }
 
-    return Results.Text(SitemapXml.Build(seo.Origin, locationSlugs, friendSlugs), "application/xml");
+    try
+    {
+        blogSlugs = (await blog.AllAsync(ct)).Select(post => post.Slug).ToList();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Sitemap omitted blog URLs because the catalog could not be read.");
+    }
+
+    return Results.Text(SitemapXml.Build(seo.Origin, locationSlugs, friendSlugs, blogSlugs), "application/xml");
 });
 
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var feed = scope.ServiceProvider.GetRequiredService<BlogFeed>();
+            await feed.AllAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Blog catalog was not warmed.");
+        }
+    });
+});
 
 app.Run();

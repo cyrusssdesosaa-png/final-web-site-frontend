@@ -43,54 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
         AOS.init();
     }
 
-    var cookieKey = 'ww_cookie_consent';
-    var optKey = 'ww_opt';
-    var overlay = document.getElementById('wwCookie');
-    var onPrivacy = /privacy-policy/i.test(location.pathname);
-
-    function readCookie(name) {
-        var prefix = name + '=';
-        var parts = document.cookie.split('; ');
-        for (var i = 0; i < parts.length; i++) {
-            if (parts[i].indexOf(prefix) === 0) {
-                return decodeURIComponent(parts[i].slice(prefix.length));
-            }
-        }
-        return '';
-    }
-
-    function writeCookie(name, value, days) {
-        var expires = new Date();
-        expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-        document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax';
-    }
-
-    function closeCookiePopup() {
-        document.documentElement.classList.remove('ww-cookie-pending');
-    }
-
-    function applyOptimization(accepted) {
-        if (accepted) {
-            writeCookie(optKey, '1', 365);
-        } else {
-            writeCookie(optKey, '', -1);
-        }
-    }
-
-    if (overlay && !onPrivacy && !readCookie(cookieKey)) {
-        document.documentElement.classList.add('ww-cookie-pending');
-    }
-
-    if (overlay) {
-        overlay.addEventListener('click', function (event) {
-            var choice = event.target.getAttribute('data-cookie-choice');
-            if (!choice) return;
-            writeCookie(cookieKey, choice, 365);
-            applyOptimization(choice === 'accepted');
-            closeCookiePopup();
-        });
-    }
-
     document.querySelectorAll('[data-pick]').forEach(function (pick) {
         var key = pick.getAttribute('data-pick');
         var board = document.querySelector('[data-board="' + key + '"]');
@@ -304,14 +256,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!onPhone) link.setAttribute('target', '_blank');
     });
 
-    if (document.querySelector('.tiktok-embed')) {
-        if (!document.querySelector('script[src*="tiktok.com/embed.js"]')) {
-            var tiktokScript = document.createElement('script');
-            tiktokScript.src = 'https://www.tiktok.com/embed.js';
-            tiktokScript.async = true;
-            document.body.appendChild(tiktokScript);
-        }
+    function loadTikTokEmbed() {
+        if (!document.querySelector('.tiktok-embed')) return;
+        if (!window.wwConsent || !window.wwConsent.allows('media')) return;
+        if (document.querySelector('script[src*="tiktok.com/embed.js"]')) return;
+        var tiktokScript = document.createElement('script');
+        tiktokScript.src = 'https://www.tiktok.com/embed.js';
+        tiktokScript.async = true;
+        document.body.appendChild(tiktokScript);
     }
+    loadTikTokEmbed();
+    document.addEventListener('ww-consent', loadTikTokEmbed);
 
     document.querySelectorAll('[data-watch-tabs]').forEach(function (pick) {
         var section = pick.closest('section');
@@ -460,6 +415,10 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.addEventListener('click', function () {
                 var id = btn.getAttribute('data-yt-play') || '';
                 if (!id) return;
+                if (!window.wwConsent || !window.wwConsent.allows('media')) {
+                    window.wwConsent && window.wwConsent.open();
+                    return;
+                }
                 clipFrame.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
                 if (clipWatch) clipWatch.href = btn.getAttribute('data-yt-watch') || ('https://www.youtube.com/watch?v=' + id);
                 clipView.hidden = false;

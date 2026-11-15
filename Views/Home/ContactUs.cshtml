@@ -35,7 +35,13 @@
                 <div class="@col">
                     @if (!string.IsNullOrWhiteSpace(loc.MapEmbedUrl))
                     {
-                        <iframe allowfullscreen frameborder="0" loading="lazy" src="@loc.MapEmbedUrl" class="mb-3" width="100%" height="400" style="border-radius: 30px;"></iframe>
+                        <div class="ww-embed mb-3" data-ww-embed="media">
+                            <iframe allowfullscreen frameborder="0" loading="lazy" data-src="@loc.MapEmbedUrl" title="Map to @loc.Name" width="100%" height="400" style="border-radius: 30px;" hidden></iframe>
+                            <div class="ww-embed-note">
+                                <p>The map stays off until you allow media cookies.</p>
+                                <button type="button" data-cookie-settings>Cookie settings</button>
+                            </div>
+                        </div>
                     }
                     <div>
                         <label class="form-label text-center d-block h1 px-4" style="color: rgb(239, 108, 0);font-size: 45px;">@loc.Name</label>

@@ -1,0 +1,73 @@
+@model BlogPage
+@{
+    ViewData["BlogEager"] = 1;
+}
+<section class="ww-sec ww-sec-yellow ww-blog">
+    <div class="ww-center">
+        <p class="ww-kicker">Stories from Wally</p>
+        <h1>@Model.Heading</h1>
+        <p>Party ideas, play tips, and family days. Newest stories first.</p>
+    </div>
+    <div class="ww-blog-layout">
+        <div>
+            @if (Model.Posts.Count == 0)
+            {
+                <p class="ww-blog-empty">No stories in this list yet. <a href="/blog">Back to all stories</a></p>
+            }
+            else
+            {
+                <div class="ww-blog-grid">
+                    <partial name="_BlogCards" model="Model.Posts" />
+                </div>
+            }
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="ww-blog-pager" aria-label="Blog pages">
+                    @if (!string.IsNullOrEmpty(Model.PrevPath))
+                    {
+                        <a rel="prev" href="@Model.PrevPath">Previous</a>
+                    }
+                    @for (var n = 1; n <= Model.TotalPages; n++)
+                    {
+                        var href = BlogUrls.Listing(n, Model.CategorySlug, Model.Year, Model.Month);
+                        if (n == Model.PageNumber)
+                        {
+                            <span aria-current="page">@n</span>
+                        }
+                        else
+                        {
+                            <a href="@href">@n</a>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(Model.NextPath))
+                    {
+                        <a rel="next" href="@Model.NextPath">Next</a>
+                    }
+                </nav>
+            }
+        </div>
+        <aside class="ww-blog-side" aria-label="Browse stories">
+            <p><a href="/blog">All stories</a></p>
+            @if (Model.Categories.Count > 0)
+            {
+                <strong>Categories</strong>
+                <ul>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <li><a href="@cat.Path" aria-current="@(cat.Selected ? "page" : null)">@cat.Label <span>(@cat.Count)</span></a></li>
+                    }
+                </ul>
+            }
+            @if (Model.Archives.Count > 0)
+            {
+                <strong>Archive</strong>
+                <ul>
+                    @foreach (var month in Model.Archives)
+                    {
+                        <li><a href="@month.Path" aria-current="@(month.Selected ? "page" : null)">@month.Label <span>(@month.Count)</span></a></li>
+                    }
+                </ul>
+            }
+        </aside>
+    </div>
+</section>

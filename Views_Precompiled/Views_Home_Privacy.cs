@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace AspNetCoreGeneratedDocument;
 
-[RazorCompiledItemMetadata("Identifier", "/Views/Home/Privacy.cshtml")]
+[RazorCompiledItemMetadata("Identifier", "/Views/Home/_PrivacyPolicyBody.cshtml")]
 [CreateNewOnMetadataUpdate]
-internal sealed class Views_Home_Privacy : RazorPage<dynamic>
+internal sealed class Views_Home__PrivacyPolicyBody : RazorPage<dynamic>
 {
 	private static readonly TagHelperAttribute __tagHelperAttribute_0 = new TagHelperAttribute("type", new HtmlString("video/mp4"), HtmlAttributeValueStyle.DoubleQuotes);
 

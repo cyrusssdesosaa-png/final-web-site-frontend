@@ -47,7 +47,7 @@ using AspNetCoreGeneratedDocument;
 [assembly: RazorCompiledItem(typeof(Views_Home_MenuHenderson), "mvc.1.0.view", "/Views/Home/MenuHenderson.cshtml")]
 [assembly: RazorCompiledItem(typeof(Views_Home_MenuRainbow), "mvc.1.0.view", "/Views/Home/MenuRainbow.cshtml")]
 [assembly: RazorCompiledItem(typeof(Views_Home_Pricing), "mvc.1.0.view", "/Views/Home/Pricing.cshtml")]
-[assembly: RazorCompiledItem(typeof(Views_Home_Privacy), "mvc.1.0.view", "/Views/Home/Privacy.cshtml")]
+[assembly: RazorCompiledItem(typeof(Views_Home__PrivacyPolicyBody), "mvc.1.0.view", "/Views/Home/_PrivacyPolicyBody.cshtml")]
 [assembly: RazorCompiledItem(typeof(Views_Shared__ValidationScriptsPartial), "mvc.1.0.view", "/Views/Shared/_ValidationScriptsPartial.cshtml")]
 [assembly: RazorCompiledItem(typeof(Views_Shared_Error), "mvc.1.0.view", "/Views/Shared/Error.cshtml")]
 

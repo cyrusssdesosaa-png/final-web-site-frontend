@@ -9,7 +9,7 @@ public static class SitemapXml
     /// Pages this app serves as 200 HTML without a database row.
     /// Active /locations/{slug} and /book/{slug} URLs are added from the Location table.
     /// /friends/{slug} URLs are added from the character catalog and active Friend rows.
-    /// Soro posts stay out until they render as crawlable HTML.
+    /// Published /blog/{slug} stories are added from the blog catalog when supplied.
     /// </summary>
     public static readonly string[] StaticPaths =
     {
@@ -35,7 +35,7 @@ public static class SitemapXml
         "len-len"
     };
 
-    public static string Build(string origin, IEnumerable<string>? locationSlugs, IEnumerable<string>? friendSlugs = null)
+    public static string Build(string origin, IEnumerable<string>? locationSlugs, IEnumerable<string>? friendSlugs = null, IEnumerable<string>? blogSlugs = null)
     {
         var paths = new List<string>(StaticPaths);
         if (locationSlugs != null)
@@ -57,6 +57,17 @@ public static class SitemapXml
             if (clean == null)
                 continue;
             Add(paths, "/friends/" + clean);
+        }
+
+        if (blogSlugs != null)
+        {
+            foreach (var slug in blogSlugs)
+            {
+                var clean = CleanSlug(slug);
+                if (clean == null || clean is "page" or "category" or "archive" or "index")
+                    continue;
+                Add(paths, "/blog/" + clean);
+            }
         }
 
         var xml = new StringBuilder();

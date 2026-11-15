@@ -1,5 +1,6 @@
 @model HomeModel
 @inject SiteContent Site
+@inject BlogFeed Stories
 @{
     ViewData["Title"] = "Home";
     var locations = Model.Locations ?? new List<Location>();
@@ -261,13 +262,29 @@
         <div class="ww-center">
             <p class="ww-kicker">Fresh from Wally</p>
             <h2>Wally's blog</h2>
+            <p>Newest stories for families who like to play big.</p>
         </div>
-        <div class="ww-notes ww-blog-embed">
-            <blockquote>
-                <div id="soro-blog"></div>
-            </blockquote>
+        @{
+            IReadOnlyList<BlogCard> latestStories = Array.Empty<BlogCard>();
+            try
+            {
+                latestStories = await Stories.LatestAsync(3, Context.RequestAborted);
+            }
+            catch
+            {
+                latestStories = Array.Empty<BlogCard>();
+            }
+            ViewData["BlogEager"] = 1;
+        }
+        @if (latestStories.Count > 0)
+        {
+            <div class="ww-blog-grid ww-blog-home">
+                <partial name="_BlogCards" model="latestStories" />
+            </div>
+        }
+        <div class="ww-center">
+            <a class="ww-btn ww-btn-navy" href="/blog">All stories</a>
         </div>
-        <script src="https://app.trysoro.com/api/embed/dfaf496a-5d9e-425c-a7ad-5daef7ed7a7a" defer></script>
     </section>
 
     <partial name="_WaveJoin" model="@("#092e4f")" />
