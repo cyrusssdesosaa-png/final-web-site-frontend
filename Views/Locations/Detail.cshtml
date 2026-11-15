@@ -78,11 +78,18 @@
             <h2 class="loc-section__title text-center">See the fun</h2>
             <div class="row justify-content-center">
                 <div class="col-lg-9">
-                    <iframe class="loc-embed"
-                            src="@Model.Location.YoutubeUrl"
-                            title="@Model.Location.Name video"
-                            allowfullscreen
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                    <div class="ww-embed" data-ww-embed="media">
+                        <iframe class="loc-embed"
+                                data-src="@Model.Location.YoutubeUrl"
+                                title="@Model.Location.Name video"
+                                allowfullscreen
+                                hidden
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                        <div class="ww-embed-note">
+                            <p>This video stays off until you allow media cookies.</p>
+                            <button type="button" data-cookie-settings>Cookie settings</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,11 +104,18 @@
             <h2 class="loc-section__title text-center">Find us</h2>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    <iframe class="loc-embed"
-                            src="@Model.Location.MapEmbedUrl"
-                            title="Map to @Model.Location.Name"
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div class="ww-embed" data-ww-embed="media">
+                        <iframe class="loc-embed"
+                                data-src="@Model.Location.MapEmbedUrl"
+                                title="Map to @Model.Location.Name"
+                                loading="lazy"
+                                hidden
+                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <div class="ww-embed-note">
+                            <p>The map stays off until you allow media cookies.</p>
+                            <button type="button" data-cookie-settings>Cookie settings</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

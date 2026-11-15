@@ -1,0 +1,59 @@
+@model BlogArticle
+@inject WallyWombatsPublic_MVC.Seo.SeoLinkBuilder Seo
+@{
+    var src = Model.Post.ImageUrl ?? "";
+    if (src.StartsWith("~/", StringComparison.Ordinal))
+        src = Url.Content(src);
+    ViewData["BlogEager"] = 0;
+}
+<section class="ww-sec ww-sec-yellow ww-blog ww-blog-hero">
+    <div class="ww-center">
+        <p class="ww-kicker"><a href="/blog">Wally's blog</a></p>
+        <h1>@Model.Post.Title</h1>
+        <p>
+            <time datetime="@Model.Post.Published.UtcDateTime.ToString("yyyy-MM-dd")">@Model.Post.Published.ToString("MMMM d, yyyy")</time>
+            @if (!string.IsNullOrEmpty(Model.Post.Category) && !string.IsNullOrEmpty(Model.Post.CategorySlug))
+            {
+                <a href="@BlogUrls.Listing(1, Model.Post.CategorySlug, null, null)">@Model.Post.Category</a>
+            }
+        </p>
+    </div>
+</section>
+<article class="ww-sec ww-sec-white ww-blog-read">
+    @if (!string.IsNullOrEmpty(src))
+    {
+        <img class="ww-blog-hero-img" src="@src" alt="" width="1200" height="675" decoding="async" />
+    }
+    <div class="ww-blog-body">
+        @if (!string.IsNullOrEmpty(Model.Html))
+        {
+            @Html.Raw(Model.Html)
+        }
+        else if (Model.BodyUnavailable)
+        {
+            @if (!string.IsNullOrEmpty(Model.Post.Excerpt))
+            {
+                <p>@Model.Post.Excerpt</p>
+            }
+            <p>The full story is taking a short break and will be back on this same page.</p>
+        }
+    </div>
+    <nav class="ww-blog-neighbors" aria-label="More stories">
+        @if (Model.Newer != null)
+        {
+            <a rel="prev" href="@Model.Newer.Path"><small>Newer</small>@Model.Newer.Title</a>
+        }
+        @if (Model.Older != null)
+        {
+            <a rel="next" href="@Model.Older.Path"><small>Older</small>@Model.Older.Title</a>
+        }
+    </nav>
+    @if (Model.Related.Count > 0)
+    {
+        <h2>More from Wally</h2>
+        <div class="ww-blog-grid">
+            <partial name="_BlogCards" model="Model.Related" />
+        </div>
+    }
+</article>
+<script type="application/ld+json">@Html.Raw(BlogHtml.ArticleJson(Model.Post, Seo.Origin))</script>

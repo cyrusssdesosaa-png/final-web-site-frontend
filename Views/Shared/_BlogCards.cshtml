@@ -1,0 +1,30 @@
+@model IReadOnlyList<BlogCard>
+@{
+    var posts = Model ?? Array.Empty<BlogCard>();
+    var eager = ViewData["BlogEager"] as int? ?? 1;
+}
+@for (var i = 0; i < posts.Count; i++)
+{
+    var post = posts[i];
+    var src = post.ImageUrl ?? "";
+    if (src.StartsWith("~/", StringComparison.Ordinal))
+        src = Url.Content(src);
+    <a class="ww-blog-card" href="@post.Path">
+        @if (!string.IsNullOrEmpty(src))
+        {
+            <img src="@src" alt="" width="640" height="400" loading="@(i < eager ? "eager" : "lazy")" decoding="async" />
+        }
+        <span class="ww-blog-card-body">
+            <time datetime="@post.Published.UtcDateTime.ToString("yyyy-MM-dd")">@post.Published.ToString("MMMM d, yyyy")</time>
+            @if (!string.IsNullOrEmpty(post.Category))
+            {
+                <span class="ww-blog-cat">@post.Category</span>
+            }
+            <h3>@post.Title</h3>
+            @if (!string.IsNullOrEmpty(post.Excerpt))
+            {
+                <p>@post.Excerpt</p>
+            }
+        </span>
+    </a>
+}

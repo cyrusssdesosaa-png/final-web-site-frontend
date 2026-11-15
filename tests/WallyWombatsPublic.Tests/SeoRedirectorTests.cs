@@ -60,6 +60,10 @@ public class SeoRedirectorTests
         Assert.Equal("https://wallywombats.com/blog", Redirect("/blog/magic-of-laughter-on-kids"));
         Assert.Equal("https://wallywombats.com/blog", Redirect("/posts/"));
         Assert.Null(Redirect("/blog/indoor-birthday-party-las-vegas"));
+        Assert.Equal("https://wallywombats.com/blog/indoor-birthday-party-las-vegas", Redirect("/", "?post=indoor-birthday-party-las-vegas"));
+        Assert.Equal("https://wallywombats.com/blog", Redirect("/blog/page/1"));
+        Assert.Equal("https://wallywombats.com/blog/page/2", Redirect("/blog", "?page=2"));
+        Assert.Null(Redirect("/blog/page/2"));
     }
 
     [Fact]
@@ -140,6 +144,15 @@ public class SeoRedirectorTests
         Assert.DoesNotContain("indoor-birthday-party-las-vegas", xml);
         Assert.DoesNotContain("/post", xml);
         Assert.DoesNotContain("www.wallywombats.com", xml);
+
+        var withPosts = SitemapXml.Build(
+            SiteOptions.DefaultOrigin,
+            new[] { "las-vegas" },
+            SitemapXml.DefaultFriendSlugs,
+            new[] { "indoor-birthday-party-las-vegas", "page", "not a slug" });
+        Assert.Contains("https://wallywombats.com/blog/indoor-birthday-party-las-vegas", withPosts);
+        Assert.DoesNotContain("/blog/page<", withPosts);
+        Assert.DoesNotContain("not a slug", withPosts);
     }
 
     private string? Redirect(string path, string query = "")

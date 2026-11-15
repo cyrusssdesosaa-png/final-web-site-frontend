@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using WallyWombatsPublic_MVC.Models;
 
 namespace WallyWombatsPublic_MVC.Seo;
 
@@ -55,9 +56,15 @@ public sealed class SeoRedirector
 
         string canonicalPath;
         var preserveQuery = true;
+        var blogTarget = BlogUrls.CleanTarget(safePath, safeQuery);
         if (IsStaticAsset(safePath))
         {
             canonicalPath = safePath;
+        }
+        else if (blogTarget != null)
+        {
+            canonicalPath = blogTarget;
+            preserveQuery = false;
         }
         else if (!TryCanonicalizePage(safePath, out canonicalPath, out preserveQuery))
         {

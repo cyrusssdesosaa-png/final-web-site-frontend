@@ -125,26 +125,6 @@ public class HomeController : Controller
 		return View(pal);
 	}
 
-	[Route("blog")]
-	public IActionResult Blog()
-	{
-		int page = 1;
-		int pageSize = 4;
-		IList<FAQ> Faq = _context.FAQ.ToList();
-		IList<Blog> blog = (from e in _context.Blog
-			where e.IsPublished == true
-			orderby e.DateCreated descending
-			select e).Skip((page - 1) * pageSize).Take(pageSize).ToList();
-		HomeModel hm = new HomeModel
-		{
-			BlogViewModel = blog,
-			FAQViewModel = Faq
-		};
-		TempData["BlogCount"] = pageSize;
-		TempData["LoadMore"] = 4;
-		return View(hm);
-	}
-
 	// Old "Load more" endpoint. TempData was null on a fresh request and this threw HTTP 500.
 	public IActionResult MoreBlogPost() => RedirectPermanent("/blog");
 

@@ -5,14 +5,19 @@
         <h2>@Site.Text("spotify.title.lead", "Wally on") <span>@Site.Text("spotify.title.accent", "Spotify")</span></h2>
         <p>@Site.Text("spotify.blurb", "Songs, stories, and sing-alongs from Wally Wombats. Press play here, or open it in Spotify.")</p>
     </div>
-    <div class="ww-spotify">
+    <div class="ww-spotify ww-embed" data-ww-embed="media">
         <iframe title="Wally Wombats on Spotify"
-                src="@Site.Text("spotify.embed", "https://open.spotify.com/embed/artist/0Af4H36JSiCOv5ljeuPg0S?utm_source=generator")"
+                data-src="@Site.Text("spotify.embed", "https://open.spotify.com/embed/artist/0Af4H36JSiCOv5ljeuPg0S?utm_source=generator")"
                 width="100%"
                 height="380"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                 loading="lazy"
+                hidden
                 allowfullscreen></iframe>
+        <div class="ww-embed-note">
+            <p>Spotify stays off until you allow media cookies.</p>
+            <button type="button" class="ww-btn ww-btn-navy" data-cookie-settings>Cookie settings</button>
+        </div>
     </div>
     <div class="ww-center">
         <a class="ww-btn ww-btn-navy" href="@Site.Text("follow.spotify", SocialLinks.Spotify)" rel="noopener" data-app-link>Listen on Spotify</a>

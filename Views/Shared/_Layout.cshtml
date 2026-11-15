@@ -17,23 +17,86 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            functionality_storage: 'denied',
+            personalization_storage: 'denied',
+            security_storage: 'granted',
+            wait_for_update: 500
+        });
+        gtag('set', 'ads_data_redaction', true);
+        gtag('set', 'url_passthrough', true);
+        (function () {
+            var raw = '';
+            var parts = document.cookie.split('; ');
+            for (var i = 0; i < parts.length; i++) {
+                if (parts[i].indexOf('ww_cookie_consent=') === 0) {
+                    raw = decodeURIComponent(parts[i].slice('ww_cookie_consent='.length));
+                    break;
+                }
+            }
+            var analytics = false, marketing = false, media = false, chosen = false;
+            if (raw === 'accepted') { analytics = marketing = media = chosen = true; }
+            else if (raw === 'declined') { chosen = true; }
+            else {
+                var match = /^v2:([01])\.([01])\.([01])$/.exec(raw);
+                if (match) {
+                    chosen = true;
+                    analytics = match[1] === '1';
+                    marketing = match[2] === '1';
+                    media = match[3] === '1';
+                }
+            }
+            if (chosen) {
+                var on = function (allowed) { return allowed ? 'granted' : 'denied'; };
+                gtag('consent', 'update', {
+                    analytics_storage: on(analytics),
+                    ad_storage: on(marketing),
+                    ad_user_data: on(marketing),
+                    ad_personalization: on(marketing),
+                    personalization_storage: on(marketing),
+                    functionality_storage: on(media)
+                });
+            } else if (!/privacy-policy/i.test(location.pathname)) {
+                document.documentElement.classList.add('ww-cookie-pending');
+                document.documentElement.classList.add('ww-cookie-open');
+            }
+        })();
+    </script>
     <title>@ViewData["Title"] - Wally Wombats</title>
     @if (ViewData["SuppressCanonical"] as bool? != true && Context.Response.StatusCode < 400)
     {
         <link rel="canonical" href="@Seo.CanonicalHref(Context.Request)" />
     }
+    @if (ViewData["Description"] is string pageDescription && pageDescription.Length > 0)
+    {
+        <meta name="description" content="@pageDescription" />
+    }
+    @if (ViewData["PrevPath"] is string prevPath)
+    {
+        <link rel="prev" href="@Seo.Origin@prevPath" />
+    }
+    @if (ViewData["NextPath"] is string nextPath)
+    {
+        <link rel="next" href="@Seo.Origin@nextPath" />
+    }
     @if (ViewData["Robots"] is string robotsDirective)
     {
         <meta name="robots" content="@robotsDirective" />
     }
+    <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/aos.min.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/Header/favicon.png" asp-append-version="true" />
     <link rel="icon" type="image/x-icon" href="~/img/Header/favicon.ico" asp-append-version="true" />
     <link rel="apple-touch-icon" href="~/img/Header/apple-touch.png" asp-append-version="true" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comic+Neue" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap" />
     <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
     <script>
         (function () {
@@ -42,10 +105,6 @@
             if (nav && nav.type === 'reload') {
                 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
                 window.scrollTo(0, 0);
-            }
-            if (/privacy-policy/i.test(location.pathname)) return;
-            if (!document.cookie.split('; ').some(function (c) { return c.indexOf('ww_cookie_consent=') === 0; })) {
-                document.documentElement.classList.add('ww-cookie-pending');
             }
         })();
     </script>
@@ -66,12 +125,14 @@
         <nav class="ww-topbar-nav" id="wwTopNav" aria-label="Main">
             @{
                 var navAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+                var navController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
             }
-            <a class="@(navAction == "Index" ? "is-on" : "")" asp-controller="Home" asp-action="Index" asp-fragment="home" data-nav="home">Home</a>
+            <a class="@(navController == "Home" && navAction == "Index" ? "is-on" : "")" asp-controller="Home" asp-action="Index" asp-fragment="home" data-nav="home">Home</a>
             <a class="@(navAction == "Friend" ? "is-on" : "")" asp-controller="Home" asp-action="Index" asp-fragment="crew" data-nav="crew">Friends</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="playground" data-nav="playground">Playground</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="arcade" data-nav="arcade">Arcade</a>
             <a asp-controller="Home" asp-action="Index" asp-fragment="birthdays" data-nav="birthdays">Birthdays</a>
+            <a class="@(navController == "Blog" ? "is-on" : "")" asp-controller="Blog" asp-action="Index">Blog</a>
             <div class="ww-loc-menu">
                 <button type="button" class="ww-loc-toggle" data-nav="locations" aria-expanded="false" aria-controls="wwLocPanel">Locations</button>
                 <div class="ww-loc-panel" id="wwLocPanel">
@@ -103,21 +164,44 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 14.5 L12 7.5 L19 14.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
     </button>
 
-    <div class="ww-cookie" id="wwCookie" role="dialog" aria-modal="true" aria-labelledby="wwCookieTitle">
+    <div class="ww-cookie" id="wwCookie" role="dialog" aria-modal="false" aria-labelledby="wwCookieTitle">
         <div class="ww-cookie-card">
             <img class="ww-cookie-logo" src="~/img/Header/wally-badge.png" alt="" />
-            <h2 id="wwCookieTitle">Cookies help us keep the fun going</h2>
-            <p>We use cookies to run Wally Wombats, remember your choices, and make the site faster for families. Please pick an option before you continue.</p>
+            <h2 id="wwCookieTitle">Cookies at Wally Wombats</h2>
+            <p>We use a first-party cookie to remember this choice. Analytics and marketing stay off until you allow them, and maps, videos, and music wait too. You can change this any time.</p>
+            <fieldset class="ww-cookie-prefs" id="wwCookiePrefs" hidden>
+                <legend>Choose by category</legend>
+                <label>
+                    <input type="checkbox" checked disabled />
+                    <span><strong>Necessary</strong> Keeps the site working and stores this choice. Always on.</span>
+                </label>
+                <label>
+                    <input type="checkbox" data-consent-cat="analytics" />
+                    <span><strong>Analytics</strong> Visit measurement, including a future Google Analytics tag. Nothing like that is loaded today.</span>
+                </label>
+                <label>
+                    <input type="checkbox" data-consent-cat="marketing" />
+                    <span><strong>Marketing</strong> Advertising and remarketing cookies. Off until you allow them.</span>
+                </label>
+                <label>
+                    <input type="checkbox" data-consent-cat="media" />
+                    <span><strong>Media</strong> YouTube, Spotify, Google Maps, and similar embeds.</span>
+                </label>
+            </fieldset>
             <div class="ww-cookie-actions">
-                <button type="button" class="ww-cookie-accept" data-cookie-choice="accepted">Accept cookies</button>
-                <button type="button" class="ww-cookie-decline" data-cookie-choice="declined">No thanks</button>
+                <button type="button" class="ww-cookie-accept" data-cookie-choice="all">Accept all</button>
+                <button type="button" class="ww-cookie-decline" data-cookie-choice="none">Reject all</button>
+                <button type="button" class="ww-cookie-customize" data-cookie-choice="customize">Customize</button>
+                <button type="button" class="ww-cookie-save" id="wwCookieSave" data-cookie-choice="save" hidden>Save choices</button>
+                <button type="button" class="ww-cookie-customize" id="wwCookieClose" data-cookie-choice="close" hidden>Close</button>
             </div>
-            <a class="ww-cookie-privacy" asp-controller="Home" asp-action="Privacy">Read our privacy policy</a>
+            <a class="ww-cookie-privacy" asp-controller="Home" asp-action="Privacy" asp-fragment="cookies">Cookie details</a>
         </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/consent.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/aos.min.js"></script>
     <script>
