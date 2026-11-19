@@ -5,15 +5,16 @@ namespace WallyWombatsPublic_MVC.Seo;
 /// permanent host redirects all read this value.
 /// </summary>
 /// <remarks>
-/// Default is the apex <c>https://wallywombats.com</c>. The 2021–2022 WordPress
-/// site preferred www, but the current ASP.NET app and the live site serve both
-/// hosts with no preference in code. Set <c>Site:OfficialOrigin</c> to
-/// <c>https://www.wallywombats.com</c> if www should be official instead.
+/// Default is <c>https://www.wallywombats.com</c>. Google Search Console still
+/// treats www as the chosen canonical (homepage last crawled 19 Nov 2026, 6:00 AM
+/// Asia/Manila) and almost all clicks still land on www. The Nov 14 2026 switch
+/// to the apex host left the apex homepage as "Google chose a different canonical."
+/// Set <c>Site:OfficialOrigin</c> only if that choice should change.
 /// The scheme is always published as https.
 /// </remarks>
 public sealed class SiteOptions
 {
-    public const string DefaultOrigin = "https://wallywombats.com";
+    public const string DefaultOrigin = "https://www.wallywombats.com";
 
     public string OfficialOrigin { get; set; } = DefaultOrigin;
 

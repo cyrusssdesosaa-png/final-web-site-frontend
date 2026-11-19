@@ -71,7 +71,8 @@ public sealed class SeoRedirector
             return null;
         }
 
-        var target = Combine(origin, canonicalPath, preserveQuery ? safeQuery : "");
+        var outgoingQuery = preserveQuery ? StripJunkQuery(safeQuery) : "";
+        var target = Combine(origin, canonicalPath, outgoingQuery);
         var current = safeScheme + "://" + safeHost + safePath + safeQuery;
         return string.Equals(current, target, StringComparison.Ordinal) ? null : target;
     }
@@ -122,7 +123,40 @@ public sealed class SeoRedirector
             return false;
         if (file.Equals("robots.txt", StringComparison.OrdinalIgnoreCase) || file.Equals("sitemap.xml", StringComparison.OrdinalIgnoreCase))
             return false;
+
+        // Old WordPress / IIS documents must go through the legacy map, not be
+        // treated as static files. /index.php was 301ing to itself on the official
+        // host and then 404ing.
+        if (ext.Equals("php", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals("aspx", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals("asp", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals("ashx", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals("asmx", StringComparison.OrdinalIgnoreCase))
+            return false;
+
         return true;
+    }
+
+    /// <summary>
+    /// Retired WordPress paths with no replacement. The middleware returns 410
+    /// so Google drops them, instead of a 301 to an unrelated page (soft 404).
+    /// </summary>
+    public static bool IsGone(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return false;
+
+        var trimmed = path.Length > 1 ? path.TrimEnd('/') : path;
+        if (!trimmed.StartsWith('/'))
+            trimmed = "/" + trimmed;
+        var lower = trimmed.ToLowerInvariant();
+        if (lower == "/author" || lower.StartsWith("/author/", StringComparison.Ordinal))
+            return true;
+        if (lower == "/wp-admin" || lower.StartsWith("/wp-admin/", StringComparison.Ordinal))
+            return true;
+        if (lower == "/wp-login.php" || lower == "/xmlrpc.php")
+            return true;
+        return false;
     }
 
     private bool TryCanonicalizePage(string path, out string canonicalPath, out bool preserveQuery)
@@ -161,6 +195,49 @@ public sealed class SeoRedirector
         return true;
     }
 
+    /// <summary>
+    /// Drops leftover campaign and WordPress search params so Google is not
+    /// served a 200 homepage at /?presets=preset1 or /?s={search_term_string}.
+    /// Meaningful params such as /book?loc= are kept.
+    /// </summary>
+    internal static string StripJunkQuery(string? query)
+    {
+        if (string.IsNullOrEmpty(query))
+            return "";
+
+        var raw = query[0] == '?' ? query[1..] : query;
+        if (raw.Length == 0)
+            return "";
+
+        var kept = new List<string>();
+        foreach (var part in raw.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var eq = part.IndexOf('=');
+            var key = eq >= 0 ? part[..eq] : part;
+            if (IsJunkQueryKey(key))
+                continue;
+            kept.Add(part);
+        }
+
+        return kept.Count == 0 ? "" : "?" + string.Join("&", kept);
+    }
+
+    internal static bool IsJunkQueryKey(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+            return true;
+
+        var name = key.Trim().ToLowerInvariant();
+        if (name is "presets" or "from" or "s" or "post"
+            or "fbclid" or "gclid" or "msclkid" or "_ga")
+            return true;
+        if (name.StartsWith("utm_", StringComparison.Ordinal))
+            return true;
+        if (name.StartsWith("mc_", StringComparison.Ordinal))
+            return true;
+        return false;
+    }
+
     private static string Combine(string origin, string canonicalPath, string query)
     {
         var hash = canonicalPath.IndexOf('#');
@@ -191,7 +268,9 @@ public static class LegacyPathMap
         "play-relax-connect-at-wally-wombats",
         "social-play-for-toddler-development",
         "tips-to-help-your-child-prepare-for-preschool",
-        "unlocking-kids-potential-through-occupational-therapy"
+        "unlocking-kids-potential-through-occupational-therapy",
+        "playing-with-kids-on-spectrum",
+        "guide-to-childrens-party-packages"
     };
 
     public static Dictionary<string, LegacyTarget> Create()
@@ -249,6 +328,12 @@ public static class LegacyPathMap
         // Live stubs answer GET with a script that jumps to the contact section.
         Gone("/subscribe", "/#contact");
         Gone("/home/sendemail_index", "/#contact");
+
+        Gone("/mobile-app", "/apps");
+        Gone("/mobileapp", "/apps");
+        Gone("/index.php", "/");
+        Gone("/default.aspx", "/");
+        Gone("/default.asp", "/");
         return map;
     }
 }

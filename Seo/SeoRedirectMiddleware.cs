@@ -15,7 +15,16 @@ public sealed class SeoRedirectMiddleware
 
     public Task Invoke(HttpContext context)
     {
-        var target = _seo.GetRedirectTarget(context.Request);
+        var request = context.Request;
+        var method = request.Method;
+        if ((HttpMethods.IsGet(method) || HttpMethods.IsHead(method))
+            && SeoRedirector.IsGone(request.Path.Value))
+        {
+            context.Response.StatusCode = StatusCodes.Status410Gone;
+            return Task.CompletedTask;
+        }
+
+        var target = _seo.GetRedirectTarget(request);
         if (target is null)
             return _next(context);
 

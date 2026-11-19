@@ -34,7 +34,7 @@ public class BlogController : Controller
 
         var article = await _blog.ArticleAsync(slug, cancellationToken);
         if (article == null)
-            return NotFound();
+            return RedirectPermanent("/blog");
 
         ViewData["Title"] = article.Post.Title;
         ViewData["Description"] = article.Post.Excerpt;
